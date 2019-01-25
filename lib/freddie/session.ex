@@ -3,7 +3,7 @@ defmodule Freddie.Session do
 
   require Logger
 
-  defstruct socket: nil
+  defstruct socket: nil, addr: nil
 
   def start_link() do
     GenServer.start_link(__MODULE__, nil)
@@ -17,6 +17,14 @@ defmodule Freddie.Session do
     Process.send(pid, {:send, data}, [:noconnect])
   end
 
+  def child_spec(_) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, []},
+      type: :worker,
+    }
+  end
+
   @impl true
   def init(_opts) do
     state = %Freddie.Session{}
@@ -25,8 +33,12 @@ defmodule Freddie.Session do
 
   @impl true
   def handle_info({:socket_ready, socket}, state) do
-    state = %Freddie.Session{state | socket: socket}
-    Logger.info(fn -> "Client #{socket} connected." end)
+    Freddie.Session.Helper.activate_socket(socket)
+
+    {:ok, {addr, _port}} = :inet.peername(socket)
+    addr_str = :inet.ntoa(addr)
+    state = %Freddie.Session{state | socket: socket, addr: addr_str}
+    Logger.info(fn -> "Client #{state.addr} connected." end)
     {:noreply, state}
   end
 
@@ -35,8 +47,10 @@ defmodule Freddie.Session do
   """
   @impl true
   def handle_info({:tcp, socket, data}, state) when socket != nil do
-    :inet.setopts(socket, [:binary, active: :once])
-    Logger.info(fn -> "Client #{socket} send #{data}" end)
+    Freddie.Session.Helper.activate_socket(socket)
+    Logger.info(fn -> "Client #{state.addr} send <#{data}>" end)
+    # Echo back for test
+    Freddie.Session.send(self(), data)
     {:noreply, state}
   end
 
@@ -45,13 +59,17 @@ defmodule Freddie.Session do
   """
   @impl true
   def handle_info({:send, data}, state) do
-    :ok = :gen_tcp.send(state.socket, data)
+    Logger.info(fn -> "Send to Client #{state.addr} send <#{data}>" end)
+    case :gen_tcp.send(state.socket, data) do
+      :ok -> :ok
+      error -> error
+    end
     {:noreply, state}
   end
 
   @impl true
-  def handle_info({:tcp_closed, socket}, state) do
-    Logger.error(fn -> "Client #{socket} disconnected." end)
+  def handle_info({:tcp_closed, _socket}, state) do
+    Logger.error(fn -> "Client #{state.addr} disconnected." end)
     {:stop, :normal, state}
   end
 
@@ -72,7 +90,7 @@ defmodule Freddie.Session do
 
   @impl true
   def terminate(_reason, state) do
-    Logger.error(fn -> "Client #{state.socket} terminated." end)
+    Logger.error(fn -> "Client #{state.addr} terminated." end)
     :ok
   end
 

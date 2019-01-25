@@ -17,6 +17,7 @@ defmodule Freddie do
     port = Application.get_env(:freddie, :port)
 
     children = [
+      Freddie.Session.Supervisor,
       {Freddie.Acceptor, [port: port]}
     ]
 

@@ -3,7 +3,7 @@ defmodule Freddie.Session do
 
   require Logger
 
-  defstruct socket: nil, addr: nil
+  defstruct socket: nil, addr: nil, buffer: nil
 
   def start_link() do
     GenServer.start_link(__MODULE__, nil)
@@ -27,7 +27,7 @@ defmodule Freddie.Session do
 
   @impl true
   def init(_opts) do
-    state = %Freddie.Session{}
+    state = %Freddie.Session{buffer: Freddie.ByteBuffer.new()}
     {:ok, state}
   end
 
@@ -46,12 +46,13 @@ defmodule Freddie.Session do
   Incomming data handler
   """
   @impl true
-  def handle_info({:tcp, socket, data}, state) when socket != nil do
+  def handle_info({:tcp, socket, data}, %Freddie.Session{buffer: buffer} = state) when socket != nil do
     Freddie.Session.Helper.activate_socket(socket)
-    Logger.info(fn -> "Client #{state.addr} send <#{data}>" end)
+    new_state = %Freddie.Session{state | buffer: Freddie.ByteBuffer.push(buffer, data)}
     # Echo back for test
     Freddie.Session.send(self(), data)
-    {:noreply, state}
+    Logger.info(fn -> "Received from #{state.addr} - current: #{byte_size(buffer.buf)}" end)
+    {:noreply, new_state}
   end
 
   @doc """
@@ -59,7 +60,6 @@ defmodule Freddie.Session do
   """
   @impl true
   def handle_info({:send, data}, state) do
-    Logger.info(fn -> "Send to Client #{state.addr} send <#{data}>" end)
     case :gen_tcp.send(state.socket, data) do
       :ok -> :ok
       error -> error

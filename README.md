@@ -19,7 +19,7 @@ be found at [https://hexdocs.pm/freddie](https://hexdocs.pm/freddie).
 
 ## 2. Features
 1. Nonblocking Socket IO
-2. Selectable TLS
+2. Selectable Encryption
 3. Fault Tolerance
 4. Support for Reliable UDP(최신 순서 보장 mode, 순서보장-재전송 보장)
 5. Shipping Google Proto Buffers

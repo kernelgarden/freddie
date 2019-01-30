@@ -1,5 +1,7 @@
 %{
   "connection": {:hex, :connection, "1.0.4", "a1cae72211f0eef17705aaededacac3eb30e6625b04a6117c1b2db6ace7d5976", [:mix], [], "hexpm"},
+  "exprotobuf": {:hex, :exprotobuf, "1.2.9", "f3cac1b0d0444da3c72cdfe80e394d721275dc80b1d7703ead9dad9267e93822", [:mix], [{:gpb, "~> 3.24", [hex: :gpb, repo: "hexpm", optional: false]}], "hexpm"},
   "gen_stage": {:hex, :gen_stage, "0.14.1", "9d46723fda072d4f4bb31a102560013f7960f5d80ea44dcb96fd6304ed61e7a4", [:mix], [], "hexpm"},
+  "gpb": {:hex, :gpb, "3.28.1", "6849b2f0004dc4e7644f4f67e7cdd18e893f0ab87eb7ad82b9cb1483ce60eed0", [:make, :rebar], [], "hexpm"},
   "poolboy": {:hex, :poolboy, "1.5.2", "392b007a1693a64540cead79830443abf5762f5d30cf50bc95cb2c1aaafa006b", [:rebar3], [], "hexpm"},
 }

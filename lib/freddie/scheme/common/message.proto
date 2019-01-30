@@ -1,10 +1,10 @@
 syntax = "proto3";
 package Common;
 
-message Message{
+message Message {
     message Meta {
         int32 id = 1;
-        string command = 4;
+        int32 command = 4;
         string timestamp = 5;
     }
 

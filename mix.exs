@@ -16,7 +16,7 @@ defmodule Freddie.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger, :exprotobuf]
     ]
   end
 
@@ -25,7 +25,8 @@ defmodule Freddie.MixProject do
     [
       {:connection, "~> 1.0.4"},
       {:poolboy, "~> 1.5"},
-      {:gen_stage, "~> 0.14.1"}
+      {:gen_stage, "~> 0.14.1"},
+      {:exprotobuf, "~> 1.2.9"}
     ]
   end
 

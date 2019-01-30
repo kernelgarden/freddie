@@ -11,6 +11,8 @@ defmodule Freddie.Session.Supervisor do
 
   @impl true
   def init(_args) do
+    :ets.new(:user_sessions, [:set, :public, :named_table])
+
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 end

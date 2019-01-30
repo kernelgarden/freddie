@@ -1,9 +1,9 @@
 defmodule Freddie.Session do
-  @behaviour GenServer
+  use GenServer, restart: :temporary
 
   require Logger
 
-  defstruct socket: nil, addr: nil, buffer: nil
+  defstruct socket: nil, addr: nil, buffer: <<>>, packet_handler_mod: nil
 
   def start_link() do
     GenServer.start_link(__MODULE__, nil)
@@ -13,7 +13,9 @@ defmodule Freddie.Session do
     Process.send(pid, {:socket_ready, socket}, [:noconnect])
   end
 
-  def send(pid, data) do
+  def send(socket, data) do
+    # Todo: error handling
+    [{_, pid}] = :ets.lookup(:user_sessions, socket)
     Process.send(pid, {:send, data}, [:noconnect])
   end
 
@@ -27,18 +29,25 @@ defmodule Freddie.Session do
 
   @impl true
   def init(_opts) do
-    state = %Freddie.Session{buffer: Freddie.ByteBuffer.new()}
+    packet_handler_mod = Application.get_env(
+      :freddie,
+      :packet_handler_mod
+    )
+    state = %Freddie.Session{buffer: <<>>, packet_handler_mod: packet_handler_mod}
     {:ok, state}
   end
 
   @impl true
   def handle_info({:socket_ready, socket}, state) do
     Freddie.Session.Helper.activate_socket(socket)
-
     {:ok, {addr, _port}} = :inet.peername(socket)
     addr_str = :inet.ntoa(addr)
     state = %Freddie.Session{state | socket: socket, addr: addr_str}
+    #state = %Freddie.Session{state | socket: socket}
     Logger.info(fn -> "Client #{state.addr} connected." end)
+
+    :ets.insert(:user_sessions, {socket, self()})
+
     {:noreply, state}
   end
 
@@ -46,13 +55,16 @@ defmodule Freddie.Session do
   Incomming data handler
   """
   @impl true
-  def handle_info({:tcp, socket, data}, %Freddie.Session{buffer: buffer} = state) when socket != nil do
-    Freddie.Session.Helper.activate_socket(socket)
-    new_state = %Freddie.Session{state | buffer: Freddie.ByteBuffer.push(buffer, data)}
+  def handle_info({:tcp, socket, data}, %Freddie.Session{buffer: buffer} = session) when socket != nil do
+    new_session = %Freddie.Session{session | buffer: buffer <> data}
+    new_session = Freddie.Session.PacketHandler.onRead(new_session)
+
     # Echo back for test
-    Freddie.Session.send(self(), data)
-    Logger.info(fn -> "Received from #{state.addr} - current: #{byte_size(buffer.buf)}" end)
-    {:noreply, new_state}
+    #Freddie.Session.send(self(), data)
+    #Logger.info(fn -> "Received from #{state.addr} - current: #{byte_size(buffer.buf)}" end)
+
+    Freddie.Session.Helper.activate_socket(socket)
+    {:noreply, new_session}
   end
 
   @doc """
@@ -60,16 +72,18 @@ defmodule Freddie.Session do
   """
   @impl true
   def handle_info({:send, data}, state) do
+    result =
     case :gen_tcp.send(state.socket, data) do
       :ok -> :ok
       error -> error
     end
+    IO.inspect(result)
     {:noreply, state}
   end
 
   @impl true
   def handle_info({:tcp_closed, _socket}, state) do
-    Logger.error(fn -> "Client #{state.addr} disconnected." end)
+    #Logger.error(fn -> "Client #{state.addr} disconnected." end)
     {:stop, :normal, state}
   end
 
@@ -90,7 +104,8 @@ defmodule Freddie.Session do
 
   @impl true
   def terminate(_reason, state) do
-    Logger.error(fn -> "Client #{state.addr} terminated." end)
+    #Logger.error(fn -> "Client #{state.addr} terminated." end)
+    :ets.delete(:user_sessions, state.socket)
     :ok
   end
 

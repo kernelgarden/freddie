@@ -1,0 +1,6 @@
+syntax = "proto3";
+package Common;
+
+message Echo {
+    string msg = 1;
+}

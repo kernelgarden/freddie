@@ -29,3 +29,5 @@ use Mix.Config
 #
 #     import_config "#{Mix.env}.exs"
 
+config :freddie,
+  packet_handler_mod: FreddieTest.Handler

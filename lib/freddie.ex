@@ -26,7 +26,7 @@ defmodule Freddie do
 
     children = [
       Freddie.Session.Supervisor,
-      {Freddie.Acceptor, [port: port]}
+      {Freddie.Listener.Supervisor, [port: port]}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

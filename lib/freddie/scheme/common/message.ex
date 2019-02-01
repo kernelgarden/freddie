@@ -30,8 +30,7 @@ defmodule Freddie.Scheme.Common do
     size = byte_size(encoded)
     case size > @max_packet_size do
       false -> {:ok,
-        Utils.pack_message(encoded) |>
-        IO.inspect()}
+        Utils.pack_message(encoded)}
       true  -> {:error, :flood_size}
     end
   end

@@ -1,45 +1,32 @@
 defmodule Freddie.Acceptor do
-  use GenServer
+  use GenServer, restart: :transient
 
   require Logger
 
-  require Record
-  import Record
+  defstruct listen_socket: nil, acceptor_ref: nil
 
-  defrecord :state,
-    listen_socket: nil,
-    acceptor_ref: nil
-
-  def start_link(args) do
-    IO.inspect(args)
-    GenServer.start_link(__MODULE__, args)
+  def start_link() do
+    GenServer.start_link(__MODULE__, [])
   end
 
-  #def child_spec(args) do
-  #  %{
-  #    id: __MODULE__,
-  #    start: {__MODULE__, :start_link, args},
-  #  }
-  #end
+  # Todo: tune buf size
 
   @impl true
-  def init(args) do
-    port = Keyword.get(args, :port)
-    opts = [:binary, reuseaddr: true, keepalive: true, backlog: 30, active: false]
-    case :gen_tcp.listen(port, opts) do
-      {:ok, listen_socket} ->
-        Logger.info(fn -> "Listen on #{port}" end)
-        {:ok, ref} = :prim_inet.async_accept(listen_socket, -1)
-        {:ok, state(listen_socket: listen_socket, acceptor_ref: ref)}
-      {:error, reason} ->
-        Logger.error(fn -> "Cannot listen: #{reason}" end)
-        {:stop, reason}
-    end
+  def init(_args) do
+    [{_, listen_socket}] = :ets.lookup(:listen_socket, :sock)
+    GenServer.cast(self(), {:init, listen_socket})
+    {:ok, nil}
   end
 
   @impl true
   def handle_call(:stop, _, state) do
     {:stop, :normal, :ok, state}
+  end
+
+  @impl true
+  def handle_cast({:init, listen_socket}, _state) do
+    {:ok, ref} = :prim_inet.async_accept(listen_socket, -1)
+    {:noreply, %Freddie.Acceptor{listen_socket: listen_socket, acceptor_ref: ref}}
   end
 
   @impl true
@@ -52,21 +39,54 @@ defmodule Freddie.Acceptor do
           {:stop, {:badtcp, {:set_socks, reason}}, state}
       end
 
+      # Todo: change this to session with session pool
       {:ok, pid} = Freddie.Session.Supervisor.start_child()
       :ok = :gen_tcp.controlling_process(client_socket, pid)
       Freddie.Session.set_socket(pid, client_socket)
 
       # 다른 커넥션을 맺을 준비를 한다
-      case :prim_inet.async_accept(listen_socket, -1) do
-        {:ok, new_ref} ->
-          {:noreply, state(state, acceptor_ref: new_ref), :hibernate}
-        {:error, new_ref} ->
-          {:stop, {:badtcp, {:async_accept, :inet.format_error(new_ref)}}, state}
-      end
+      accept(state)
 
     catch
       :exit, reason ->
         {:stop, {:badtcp, reason}, state}
+    end
+  end
+
+  @impl true
+  def handle_info({:inet_async, _listen_socket, _ref, {:error, reason}}, state) do
+    case reason do
+      :closed ->
+        {:stop, :normal, state}
+      :econnaborted ->
+        accept(state)
+      _ ->
+        {:stop, {:accept_failed, reason}, state}
+    end
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_info(_, state) do
+    {:noreply, state}
+  end
+
+  @impl true
+  def terminate(_reason, _state) do
+    :ok
+  end
+
+  @impl true
+  def code_change(_old_vsn, state, _extra) do
+    {:ok, state}
+  end
+
+  defp accept(state) do
+    case :prim_inet.async_accept(state.listen_socket, -1) do
+      {:ok, new_ref} ->
+        {:noreply, %Freddie.Acceptor{state | acceptor_ref: new_ref}}
+      :error ->
+        {:stop, {:badtcp, {:async_accept}}, state}
     end
   end
 

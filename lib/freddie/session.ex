@@ -39,7 +39,6 @@ defmodule Freddie.Session do
 
   @impl true
   def handle_info({:socket_ready, socket}, state) do
-    Freddie.Session.Helper.activate_socket(socket)
     {:ok, {addr, _port}} = :inet.peername(socket)
     addr_str = :inet.ntoa(addr)
     state = %Freddie.Session{state | socket: socket, addr: addr_str}
@@ -47,6 +46,8 @@ defmodule Freddie.Session do
     Logger.info(fn -> "Client #{state.addr} connected." end)
 
     :ets.insert(:user_sessions, {socket, self()})
+
+    Freddie.Session.Helper.activate_socket(socket)
 
     {:noreply, state}
   end
@@ -72,12 +73,10 @@ defmodule Freddie.Session do
   """
   @impl true
   def handle_info({:send, data}, state) do
-    result =
     case :gen_tcp.send(state.socket, data) do
       :ok -> :ok
       error -> error
     end
-    IO.inspect(result)
     {:noreply, state}
   end
 

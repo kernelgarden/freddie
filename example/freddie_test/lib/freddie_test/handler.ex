@@ -9,7 +9,7 @@ defmodule FreddieTest.Handler do
     case command do
       1 ->
         echo = Scheme.Echo.decode(payload)
-        IO.puts("Received from client: #{inspect echo.msg}")
+        #IO.puts("Received from client: #{inspect echo.msg}")
         {:ok, resp} = Freddie.Scheme.Common.new_message(1, payload)
         Freddie.Session.send(socket, resp)
       _ -> :error

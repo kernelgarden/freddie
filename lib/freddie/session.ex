@@ -60,14 +60,14 @@ defmodule Freddie.Session do
   @impl true
   def handle_info({:tcp, socket, data}, %Freddie.Session{buffer: buffer} = session)
       when socket != nil do
-    #new_session = %Freddie.Session{session | buffer: <<buffer::binary, data::binary>>}
-    #new_session = Freddie.Session.PacketHandler.onRead(new_session)
-    new_session = session
+    new_session = %Freddie.Session{session | buffer: <<buffer::binary, data::binary>>}
+    new_session = Freddie.Session.PacketHandler.onRead(new_session)
+    #new_session = session
 
     # Echo back for test
     #Freddie.Session.send(socket, data)
     #Freddie.Transport.port_cmd(socket, data)
-    :gen_tcp.send(socket, data)
+    #:gen_tcp.send(socket, data)
     #Logger.info(fn -> "Received from #{state.addr} - current: #{byte_size(buffer.buf)}" end)
 
     {:noreply, new_session}

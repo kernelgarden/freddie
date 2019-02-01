@@ -3,7 +3,7 @@ defmodule Freddie.Session do
 
   require Logger
 
-  defstruct socket: nil, addr: nil, buffer: <<>>, packet_handler_mod: nil
+  defstruct socket: nil, addr: nil, buffer: <<>>, packet_handler_mod: nil, send_queue: []
 
   def start_link() do
     GenServer.start_link(__MODULE__, nil)
@@ -60,16 +60,23 @@ defmodule Freddie.Session do
   @impl true
   def handle_info({:tcp, socket, data}, %Freddie.Session{buffer: buffer} = session)
       when socket != nil do
-    new_session = %Freddie.Session{session | buffer: buffer <> data}
-    new_session = Freddie.Session.PacketHandler.onRead(new_session)
-    #new_session = session
+    #new_session = %Freddie.Session{session | buffer: <<buffer::binary, data::binary>>}
+    #new_session = Freddie.Session.PacketHandler.onRead(new_session)
+    new_session = session
 
     # Echo back for test
     #Freddie.Session.send(socket, data)
+    #Freddie.Transport.port_cmd(socket, data)
+    :gen_tcp.send(socket, data)
     #Logger.info(fn -> "Received from #{state.addr} - current: #{byte_size(buffer.buf)}" end)
 
-    Freddie.Session.Helper.activate_socket(socket)
     {:noreply, new_session}
+  end
+
+  @impl true
+  def handle_info({:tcp_passive, socket}, session) do
+    Freddie.Session.Helper.activate_socket(socket)
+    {:noreply, session}
   end
 
   @doc """
@@ -77,12 +84,29 @@ defmodule Freddie.Session do
   """
   @impl true
   def handle_info({:send, data}, state) do
-    case :gen_tcp.send(state.socket, data) do
-      :ok -> :ok
-      error -> error
-    end
+    #case :gen_tcp.send(state.socket, data) do
+    #  :ok -> :ok
+    #  error -> error
+    #end
+    true = Freddie.Transport.port_cmd(state.socket, data)
 
     {:noreply, state}
+  end
+
+  @impl true
+  def handle_info({:inet_reply, _, :ok}, state) do
+    #todo
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_info({:inet_reply, _, status}, _state) do
+    exit({:session, :send_failed, status})
+  end
+
+  @impl true
+  def handle_info(:shutdown, state) do
+    {:stop, :normal, state}
   end
 
   @impl true

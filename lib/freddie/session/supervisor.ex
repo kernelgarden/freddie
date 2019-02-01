@@ -1,6 +1,8 @@
 defmodule Freddie.Session.Supervisor do
   use DynamicSupervisor
 
+  require Logger
+
   @spec start_link(any()) :: :ignore | {:error, any()} | {:ok, pid()}
   def start_link(args \\ []) do
     DynamicSupervisor.start_link(__MODULE__, args, name: __MODULE__)
@@ -22,8 +24,17 @@ defmodule Freddie.Session.Supervisor do
              strategy: :one_for_one
            }}
   def init(_args) do
+    Process.flag(:trap_exit, true)
     :ets.new(:user_sessions, [:set, :public, :named_table])
 
     DynamicSupervisor.init(strategy: :one_for_one)
   end
+
+
+  @impl true
+  def handle_info({:exit, from, reason}, state) do
+    Logger.error(fn -> "session #{inspect from} is down. reason: #{inspect reason}" end)
+    {:noreply, state}
+  end
+
 end

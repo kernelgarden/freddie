@@ -28,10 +28,10 @@ defmodule Freddie.Scheme.Common do
     encoded = Message.encode(msg)
 
     size = byte_size(encoded)
+
     case size > @max_packet_size do
-      false -> {:ok,
-        Utils.pack_message(encoded)}
-      true  -> {:error, :flood_size}
+      false -> {:ok, Utils.pack_message(encoded)}
+      true -> {:error, :flood_size}
     end
   end
 
@@ -41,4 +41,3 @@ defmodule Freddie.Scheme.Common do
     {message.meta.command, message.meta, message.payload}
   end
 end
-

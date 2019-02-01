@@ -23,16 +23,18 @@ defmodule Freddie.Session do
     %{
       id: __MODULE__,
       start: {__MODULE__, :start_link, []},
-      type: :worker,
+      type: :worker
     }
   end
 
   @impl true
   def init(_opts) do
-    packet_handler_mod = Application.get_env(
-      :freddie,
-      :packet_handler_mod
-    )
+    packet_handler_mod =
+      Application.get_env(
+        :freddie,
+        :packet_handler_mod
+      )
+
     state = %Freddie.Session{buffer: <<>>, packet_handler_mod: packet_handler_mod}
     {:ok, state}
   end
@@ -42,7 +44,7 @@ defmodule Freddie.Session do
     {:ok, {addr, _port}} = :inet.peername(socket)
     addr_str = :inet.ntoa(addr)
     state = %Freddie.Session{state | socket: socket, addr: addr_str}
-    #state = %Freddie.Session{state | socket: socket}
+    # state = %Freddie.Session{state | socket: socket}
     Logger.info(fn -> "Client #{state.addr} connected." end)
 
     :ets.insert(:user_sessions, {socket, self()})
@@ -56,13 +58,14 @@ defmodule Freddie.Session do
   Incomming data handler
   """
   @impl true
-  def handle_info({:tcp, socket, data}, %Freddie.Session{buffer: buffer} = session) when socket != nil do
+  def handle_info({:tcp, socket, data}, %Freddie.Session{buffer: buffer} = session)
+      when socket != nil do
     new_session = %Freddie.Session{session | buffer: buffer <> data}
     new_session = Freddie.Session.PacketHandler.onRead(new_session)
 
     # Echo back for test
-    #Freddie.Session.send(self(), data)
-    #Logger.info(fn -> "Received from #{state.addr} - current: #{byte_size(buffer.buf)}" end)
+    #Freddie.Session.send(socket, data)
+    # Logger.info(fn -> "Received from #{state.addr} - current: #{byte_size(buffer.buf)}" end)
 
     Freddie.Session.Helper.activate_socket(socket)
     {:noreply, new_session}
@@ -77,12 +80,13 @@ defmodule Freddie.Session do
       :ok -> :ok
       error -> error
     end
+
     {:noreply, state}
   end
 
   @impl true
   def handle_info({:tcp_closed, _socket}, state) do
-    #Logger.error(fn -> "Client #{state.addr} disconnected." end)
+    # Logger.error(fn -> "Client #{state.addr} disconnected." end)
     {:stop, :normal, state}
   end
 
@@ -103,7 +107,7 @@ defmodule Freddie.Session do
 
   @impl true
   def terminate(_reason, state) do
-    #Logger.error(fn -> "Client #{state.addr} terminated." end)
+    Logger.error(fn -> "Client #{state.addr} terminated." end)
     :ets.delete(:user_sessions, state.socket)
     :ok
   end
@@ -112,5 +116,4 @@ defmodule Freddie.Session do
   def code_change(_old_vsn, state, _extra) do
     {:ok, state}
   end
-
 end

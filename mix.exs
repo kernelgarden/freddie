@@ -32,7 +32,7 @@ defmodule Freddie.MixProject do
 
   defp package do
     [
-      files: ["lib", "mix.exs", "README.md", "LICENSE",  "config/config.exs"],
+      files: ["lib", "mix.exs", "README.md", "LICENSE", "config/config.exs"],
       maintainers: ["kernelgarden"],
       license: ["Apache 2.0"]
     ]

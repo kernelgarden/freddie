@@ -7,5 +7,4 @@ defmodule FreddieTest.Scheme do
       string msg = 1;
   }
   """
-
 end

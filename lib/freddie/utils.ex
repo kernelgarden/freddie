@@ -1,5 +1,4 @@
 defmodule Freddie.Utils do
-
   def make_header(size, toPackSize \\ 2) do
     bin = :binary.encode_unsigned(size, :big)
     bin_size = byte_size(bin)
@@ -9,6 +8,7 @@ defmodule Freddie.Utils do
       true ->
         # prepend padding byte
         build_padding_byte(need_byte_len) <> bin
+
       false ->
         # fit case
         bin

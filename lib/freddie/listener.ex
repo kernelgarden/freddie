@@ -6,7 +6,7 @@ defmodule Freddie.Listener do
   defstruct listen_socket: nil, acceptor_ref: nil
 
   def start_link(args) do
-    GenServer.start_link(__MODULE__, args)
+    GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
   @impl true
@@ -20,11 +20,12 @@ defmodule Freddie.Listener do
         Logger.info(fn -> "Listen on #{port}" end)
         :ets.insert(:listen_socket, {:sock, listen_socket})
         {:ok, nil}
+
       {:error, reason} ->
         Logger.error(fn -> "Cannot listen: #{reason}" end)
         {:stop, reason}
     end
   end
 
-  #Todo: add more process...
+  # Todo: add more process...
 end

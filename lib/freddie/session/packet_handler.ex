@@ -2,6 +2,7 @@ defmodule Freddie.Session.PacketHandler do
   # header size is unsigned integer of 2 byte
   @header_size 2 * 8
 
+  @spec onRead(Freddie.Session.t()) :: Freddie.Session.t()
   def onRead(%Freddie.Session{} = session) do
     new_session =
       case parse(session.buffer, session) do

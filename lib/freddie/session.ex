@@ -13,11 +13,10 @@ defmodule Freddie.Session do
     Process.send(pid, {:socket_ready, socket}, [:noconnect])
   end
 
-  def send(socket, data) do
-    # Todo: error handling
-    [{_, pid}] = :ets.lookup(:user_sessions, socket)
-    Process.send(pid, {:send, data}, [:noconnect])
-  end
+  #def send(socket, data) do
+  #  [{_, pid}] = :ets.lookup(:user_sessions, socket)
+  #  Process.send(pid, {:send, data}, [:noconnect])
+  #end
 
   def child_spec(_) do
     %{

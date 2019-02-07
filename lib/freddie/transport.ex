@@ -1,5 +1,6 @@
 defmodule Freddie.Transport do
 
+  @spec port_cmd(any(), any()) :: any()
   def port_cmd(socket, data) when socket != nil do
     try do
       case :erlang.port_command(socket, data, [:nosuspend]) do

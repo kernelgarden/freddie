@@ -7,6 +7,7 @@ defmodule Freddie do
 
   require Logger
 
+  @spec start_link(any()) :: :ignore | {:error, any()} | {:ok, pid()}
   def start_link(opts \\ []) do
     Logger.info(fn -> "Start Freddie..." end)
     Supervisor.start_link(__MODULE__, opts, name: __MODULE__)

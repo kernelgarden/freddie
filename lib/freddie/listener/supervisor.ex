@@ -23,7 +23,7 @@ defmodule Freddie.Listener.Supervisor do
     Supervisor.init(children, strategy: :one_for_all, max_restarts: 10, max_seconds: 10)
   end
 
-  def handle_info({:exit, from, reason}, state) do
+  def handle_info({:EXIT, from, reason}, state) do
     Logger.error(fn -> "#{inspect from} is down. reason: #{inspect reason}" end)
     {:noreply, state}
   end

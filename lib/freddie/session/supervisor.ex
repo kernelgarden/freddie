@@ -30,9 +30,7 @@ defmodule Freddie.Session.Supervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-
-  @impl true
-  def handle_info({:exit, from, reason}, state) do
+  def handle_info({:EXIT, from, reason}, state) do
     Logger.error(fn -> "session #{inspect from} is down. reason: #{inspect reason}" end)
     {:noreply, state}
   end

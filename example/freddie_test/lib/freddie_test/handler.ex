@@ -11,7 +11,7 @@ defmodule FreddieTest.Handler do
         echo = Scheme.Echo.decode(payload)
         # IO.puts("Received from client: #{inspect echo.msg}")
         {:ok, resp} = Freddie.Scheme.Common.new_message(1, payload)
-        Freddie.Session.send(socket, resp)
+        Freddie.Transport.port_cmd(socket, resp)
 
       _ ->
         :error

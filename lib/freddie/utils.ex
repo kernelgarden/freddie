@@ -1,4 +1,5 @@
 defmodule Freddie.Utils do
+  @spec make_header(non_neg_integer(), number()) :: binary()
   def make_header(size, toPackSize \\ 2) do
     bin = :binary.encode_unsigned(size, :big)
     bin_size = byte_size(bin)
@@ -15,6 +16,7 @@ defmodule Freddie.Utils do
     end
   end
 
+  @spec pack_message(binary()) :: binary()
   def pack_message(data) do
     header = make_header(byte_size(data), 2)
     header <> data

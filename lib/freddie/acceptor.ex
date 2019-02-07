@@ -43,6 +43,14 @@ defmodule Freddie.Acceptor do
           {:stop, {:badtcp, {:set_socks, reason}}, state}
       end
 
+      case set_buffer(client_socket) do
+        :ok ->
+          :ok
+
+        {:error, reason} ->
+          {:stop, {:badtcp, {:set_buffer, reason}}, state}
+      end
+
       # Todo: change this to session with session pool
       {:ok, pid} = Freddie.Session.Supervisor.start_child()
       :ok = :gen_tcp.controlling_process(client_socket, pid)
@@ -94,6 +102,25 @@ defmodule Freddie.Acceptor do
 
       :error ->
         {:stop, {:badtcp, {:async_accept}}, state}
+    end
+  end
+
+  defp set_buffer(client_socket) do
+    case :prim_inet.getopts(client_socket, [:sndbuf, :recbuf, :buffer]) do
+      {:ok, opts} ->
+        {_key, maxSize} =
+          opts
+          |> Enum.max_by(fn {_key, val} -> val end)
+        case :prim_inet.setopt(client_socket, :buffer, maxSize) do
+          :ok ->
+            :ok
+          error ->
+            :gen_tcp.close(client_socket)
+            error
+        end
+      error ->
+        :gen_tcp.close(client_socket)
+        error
     end
   end
 

@@ -7,7 +7,7 @@ defmodule Freddie.Scheme.Common do
     message Meta {
         int32 id = 1;
         int32 command = 4;
-        string timestamp = 5;
+        int32 timestamp = 5;
     }
 
     Meta meta = 1;
@@ -22,7 +22,7 @@ defmodule Freddie.Scheme.Common do
 
   def new_message(command, payload) do
     # Todo: genderate id automatic
-    cur_timestamp = to_string(DateTime.to_unix(DateTime.utc_now()))
+    cur_timestamp = DateTime.to_unix(DateTime.utc_now())
     meta = Message.Meta.new(id: 0, command: command, timestamp: cur_timestamp)
     msg = Message.new(meta: meta, payload: payload)
     encoded = Message.encode(msg)

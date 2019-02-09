@@ -26,7 +26,8 @@ defmodule Freddie.MixProject do
       {:connection, "~> 1.0.4"},
       {:poolboy, "~> 1.5"},
       {:gen_stage, "~> 0.14.1"},
-      {:exprotobuf, "~> 1.2.9"}
+      {:exprotobuf, "~> 1.2.9"},
+      {:exprof, "~> 0.2.0"}
     ]
   end
 

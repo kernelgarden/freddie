@@ -1,18 +1,12 @@
 defmodule FreddieTest.Application do
   use Application
 
-  def start(_type, _args) do
-    :fprof.trace([:start, verbose: true, procs: :all])
+  require Logger
 
-    spawn fn ->
-      :timer.sleep(10_000)
-      :fprof.trace(:stop)
-      :fprof.profile()
-      :fprof.analyse(totals: false, dest: 'prof.analysis')
-    end
+  def start(_type, args) do
     Supervisor.start_link(
       [
-        Freddie
+        {Freddie, [activate_eprof: true, activate_fprof: true]}
       ],
       strategy: :one_for_one
     )

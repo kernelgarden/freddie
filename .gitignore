@@ -23,3 +23,8 @@ erl_crash.dump
 freddie-*.tar
 
 .elixir_ls/
+
+*.analysis
+*.trace
+
+.DS_Store

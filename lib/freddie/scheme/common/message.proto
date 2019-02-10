@@ -9,5 +9,5 @@ message Message {
     }
 
     Meta meta = 1;
-    string payload = 2;
+    bytes payload = 2;
 }

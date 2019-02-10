@@ -20,7 +20,7 @@ defmodule Freddie.Session.PacketHandler do
     :empty
   end
 
-  defp parse(<<length::big-@header_size, data::binary>>, session) do
+  defp parse(<<length::big-@header_size, data::binary>> = _buffer, session) do
     case data do
       <<cur_data::binary-size(length), remain::binary>> ->
         session.packet_handler_mod.handle(

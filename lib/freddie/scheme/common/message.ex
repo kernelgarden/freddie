@@ -5,13 +5,13 @@ defmodule Freddie.Scheme.Common do
 
   message Message{
     message Meta {
-        int32 id = 1;
-        int32 command = 4;
-        int32 timestamp = 5;
+      required int32 id = 1;
+      required int32 command = 4;
+      required int32 timestamp = 5;
     }
 
-    Meta meta = 1;
-    string payload = 2;
+    required Meta meta = 1;
+    required bytes payload = 2;
   }
   """
 

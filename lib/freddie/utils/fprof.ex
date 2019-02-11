@@ -18,6 +18,10 @@ defmodule Freddie.Utils.Fprof do
     GenServer.cast(__MODULE__, {:stop})
   end
 
+  def kill() do
+    GenServer.cast(__MODULE__, {:kill})
+  end
+
   @impl true
   @spec init(keyword()) :: {:ok, Freddie.Utils.Fprof.t()}
   def init(args) do
@@ -55,6 +59,12 @@ defmodule Freddie.Utils.Fprof do
     if state.is_active, do: stop_profiling(state)
 
     {:stop, :normal, state}
+  end
+
+  @impl true
+  def handle_info(msg, state) do
+    Logger.warn("Received unknown msg!!! - #{inspect msg}")
+    {:noreply, state}
   end
 
   defp stop_profiling(state) do

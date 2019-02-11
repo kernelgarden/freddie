@@ -27,5 +27,11 @@ defmodule Freddie.Listener do
     end
   end
 
+  @impl true
+  def handle_info(msg, state) do
+    Logger.warn("Received unknown msg!!! - #{inspect msg}")
+    {:noreply, state}
+  end
+
   # Todo: add more process...
 end

@@ -114,7 +114,8 @@ defmodule Freddie.Session do
   end
 
   @impl true
-  def handle_info(_info, state) do
+  def handle_info(msg, state) do
+    Logger.warn("Received unknown msg!!! - #{inspect msg}")
     {:noreply, state}
   end
 

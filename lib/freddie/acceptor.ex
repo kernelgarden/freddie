@@ -41,26 +41,20 @@ defmodule Freddie.Acceptor do
       {:ok, pid} = Freddie.Session.Supervisor.start_child()
       :ok = :gen_tcp.controlling_process(client_socket, pid)
 
-      case set_socket(listen_socket, client_socket) do
-        :ok ->
-          :ok
+      with :ok <- set_socket(listen_socket, client_socket),
+           :ok <- set_buffer(client_socket)
+      do
+        Freddie.Session.set_socket(pid, client_socket)
 
+        # ready to accept new session
+        accept(state)
+      else
         {:error, reason} ->
-          {:stop, {:badtcp, {:set_socks, reason}}, state}
+          {:stop, {:badtcp, reason}, state}
+
+        _ ->
+          {:stop, {:badtcp, :unknown_error}, state}
       end
-
-      case set_buffer(client_socket) do
-        :ok ->
-          :ok
-
-        {:error, reason} ->
-          {:stop, {:badtcp, {:set_buffer, reason}}, state}
-      end
-
-      Freddie.Session.set_socket(pid, client_socket)
-
-      # 다른 커넥션을 맺을 준비를 한다
-      accept(state)
     catch
       :exit, reason ->
         {:stop, {:badtcp, reason}, state}
@@ -84,7 +78,8 @@ defmodule Freddie.Acceptor do
   end
 
   @impl true
-  def handle_info(_, state) do
+  def handle_info(msg, state) do
+    Logger.warn("Received unknown msg!!! - #{inspect msg}")
     {:noreply, state}
   end
 

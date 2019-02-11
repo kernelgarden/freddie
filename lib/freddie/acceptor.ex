@@ -35,6 +35,12 @@ defmodule Freddie.Acceptor do
   @impl true
   def handle_info({:inet_async, listen_socket, _ref, {:ok, client_socket}}, state) do
     try do
+      # Todo: change this to session with session pool
+      # This sequence is important. If sokcet activated before executed to :gen_tcp.contriolling_process,
+      # race condition will occur. (Possibility of Send client's packet to acceptor process)
+      {:ok, pid} = Freddie.Session.Supervisor.start_child()
+      :ok = :gen_tcp.controlling_process(client_socket, pid)
+
       case set_socket(listen_socket, client_socket) do
         :ok ->
           :ok
@@ -51,9 +57,6 @@ defmodule Freddie.Acceptor do
           {:stop, {:badtcp, {:set_buffer, reason}}, state}
       end
 
-      # Todo: change this to session with session pool
-      {:ok, pid} = Freddie.Session.Supervisor.start_child()
-      :ok = :gen_tcp.controlling_process(client_socket, pid)
       Freddie.Session.set_socket(pid, client_socket)
 
       # 다른 커넥션을 맺을 준비를 한다

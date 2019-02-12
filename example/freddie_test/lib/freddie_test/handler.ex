@@ -1,6 +1,16 @@
 defmodule FreddieTest.Handler do
+  use Freddie.Router
+
   alias FreddieTest.Scheme
 
+  handler Scheme.Echo do
+    IO.puts("Recieved from client: #{inspect msg}")
+    echo = Scheme.Echo.new(msg: msg)
+    {:ok, resp} = Freddie.Scheme.Common.new_message(Scheme.Echo.seq, Scheme.Echo.encode(echo))
+    Freddie.Transport.port_cmd(socket, resp)
+  end
+
+  ~S"""
   def handle({command, meta, payload}, socket) do
     route_by_protocol(command, meta, payload, socket)
   end
@@ -17,4 +27,5 @@ defmodule FreddieTest.Handler do
         :error
     end
   end
+  """
 end

@@ -6,7 +6,8 @@ defmodule FreddieTest.Handler do
   handler Scheme.Echo do
     IO.puts("Recieved from client: #{inspect msg}")
     echo = Scheme.Echo.new(msg: msg)
-    {:ok, resp} = Freddie.Scheme.Common.new_message(Scheme.Echo.seq, Scheme.Echo.encode(echo))
+    # Todo: fix here
+    {:ok, resp} = Freddie.Scheme.Common.new_message(0, Scheme.Echo.encode(echo))
     Freddie.Transport.port_cmd(socket, resp)
   end
 

@@ -2,6 +2,8 @@ defmodule Freddie.Router do
 
   require Logger
 
+  @root_module SchemeTable
+
   defmacro __using__(_opts) do
     quote do
       import Freddie.Router
@@ -15,16 +17,21 @@ defmodule Freddie.Router do
   end
 
   defmacro __before_compile__(_env) do
-    FreddieTest.Scheme.defs()
+    packet_handler_mod =
+      Application.get_env(
+        :freddie,
+        :scheme_root_mod
+      )
+
+    packet_handler_mod.defs()
     |> Enum.with_index()
-    |> Enum.each(fn {def, idx} ->
+    |> IO.inspect(label: "[DEBUG] => ")
+    |> Enum.map(fn {def, idx} ->
         {{:msg, protocol_mod}, _} = def
-        fetch_fn = quote do
-          def seq(), do: idx
-        end
-        Module.eval_quoted(protocol_mod, fetch_fn)
-        IO.puts("=====> #{inspect protocol_mod}")
+
+        {protocol_mod, idx}
       end)
+    |> generate_scheme_table()
   end
 
   defmacro handler(protocol, body) do
@@ -33,7 +40,8 @@ defmodule Freddie.Router do
       body: Macro.escape(body, unquote: true)
     ] do
       protocol_seq = quote do
-        unquote(protocol).seq()
+        #unquote(protocol).seq()
+        get_scheme_seq(unquote(protocol))
       end
 
       defp internal_dispatch(protocol_seq, var!(meta), payload, var!(socket)) do
@@ -52,6 +60,22 @@ defmodule Freddie.Router do
     quote do
       @before_compile unquote(__MODULE__)
     end
+  end
+
+  defp root_mod_term(), do: :"#{@root_module}"
+
+  defp generate_scheme_table(schemes) do
+    module = root_mod_term()
+    binary = Freddie.Router.Builder.compile(module, schemes)
+    :code.purge(module)
+    {:module, ^module} = :code.load_binary(module, '#{module}.erl', binary)
+    :ok
+  end
+
+  defp get_scheme_seq(scheme) do
+    root_mod = root_mod_term()
+    func_name = Freddie.Router.Builder.key_to_term(scheme)
+    root_mod.func_name
   end
 
   ~S"""

@@ -40,7 +40,6 @@ defmodule Freddie.Router do
       body: Macro.escape(body, unquote: true)
     ] do
       protocol_seq = quote do
-        #unquote(protocol).seq()
         get_scheme_seq(unquote(protocol))
       end
 
@@ -77,15 +76,4 @@ defmodule Freddie.Router do
     func_name = Freddie.Router.Builder.key_to_term(scheme)
     root_mod.func_name
   end
-
-  ~S"""
-  defmacro reply() do
-    quote do
-      defp internal_dispatch(:reply, )
-    end
-  end
-
-  defmacro res_only do
-  end
-  """
 end

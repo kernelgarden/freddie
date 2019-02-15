@@ -20,7 +20,9 @@ defmodule Freddie.Session.PacketHandler do
     :empty
   end
 
-  defp parse(<<length::big-@header_size, data::binary>> = _buffer, session) do
+  # To maximize optimization, I adopt like this.
+  # http://erlang.org/doc/efficiency_guide/binaryhandling.html#matching-binaries
+  defp parse(<<length::big-@header_size, data::binary>> = buffer, session) do
     case data do
       <<cur_data::binary-size(length), remain::binary>> ->
         session.packet_handler_mod.dispatch(
@@ -31,7 +33,7 @@ defmodule Freddie.Session.PacketHandler do
         parse(remain, session)
 
       _ ->
-        {:not_enough_data, data}
+        {:not_enough_data, buffer}
     end
   end
 end

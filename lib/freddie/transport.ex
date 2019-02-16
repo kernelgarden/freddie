@@ -8,8 +8,8 @@ defmodule Freddie.Transport do
       case :erlang.port_command(socket, data, [:nosuspend]) do
         false ->
           # Todo: prepend to send buffer
-          nil
-        true -> true
+          :port_is_busy
+        true -> :ok
       end
     rescue
       #e in ArgumentError ->

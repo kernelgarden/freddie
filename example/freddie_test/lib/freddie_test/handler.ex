@@ -7,7 +7,8 @@ defmodule FreddieTest.Handler do
     echo = Scheme.Echo.new(msg: msg.msg)
     # Todo: fix here
     {:ok, resp} = Freddie.Scheme.Common.new_message(0, Scheme.Echo.encode(echo))
-    Freddie.Transport.port_cmd(socket, resp)
+    Freddie.Session.send(socket, resp)
+    #Freddie.Transport.port_cmd(socket, resp)
   end
 
   ~S"""

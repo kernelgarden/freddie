@@ -13,7 +13,15 @@ defmodule Freddie.Listener do
   @spec init(keyword()) :: {:ok, Freddie.Listener.t()} | {:stop, atom()}
   def init(args) do
     port = Keyword.get(args, :port)
-    opts = [:binary, reuseaddr: true, keepalive: true, active: false, backlog: 1024, nodelay: true]
+
+    opts = [
+      :binary,
+      reuseaddr: true,
+      keepalive: true,
+      active: false,
+      backlog: 1024,
+      nodelay: true
+    ]
 
     case :gen_tcp.listen(port, opts) do
       {:ok, listen_socket} ->
@@ -39,7 +47,7 @@ defmodule Freddie.Listener do
 
   @impl true
   def handle_info(msg, state) do
-    Logger.warn("Received unknown msg!!! - #{inspect msg}")
+    Logger.warn("Received unknown msg!!! - #{inspect(msg)}")
     {:noreply, state}
   end
 end

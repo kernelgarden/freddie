@@ -42,8 +42,7 @@ defmodule Freddie.Acceptor do
       :ok = :gen_tcp.controlling_process(client_socket, pid)
 
       with :ok <- set_socket(listen_socket, client_socket),
-           :ok <- set_buffer(client_socket)
-      do
+           :ok <- set_buffer(client_socket) do
         Freddie.Session.set_socket(pid, client_socket)
 
         # ready to accept new session
@@ -79,7 +78,7 @@ defmodule Freddie.Acceptor do
 
   @impl true
   def handle_info(msg, state) do
-    Logger.warn("Received unknown msg!!! - #{inspect msg}")
+    Logger.warn("Received unknown msg!!! - #{inspect(msg)}")
     {:noreply, state}
   end
 
@@ -109,13 +108,16 @@ defmodule Freddie.Acceptor do
         {_key, maxSize} =
           opts
           |> Enum.max_by(fn {_key, val} -> val end)
+
         case :prim_inet.setopt(client_socket, :buffer, maxSize) do
           :ok ->
             :ok
+
           error ->
             :gen_tcp.close(client_socket)
             error
         end
+
       error ->
         :gen_tcp.close(client_socket)
         error

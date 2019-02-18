@@ -37,6 +37,7 @@ defmodule Freddie.Utils.Fprof do
         Logger.info("Start profiling with fprof")
         :fprof.trace([:start, verbose: true, procs: :all])
         {:noreply, %Freddie.Utils.Fprof{state | is_active: true}}
+
       true ->
         Logger.warn("Already started fprof!!!")
         {:noreply, state}
@@ -48,6 +49,7 @@ defmodule Freddie.Utils.Fprof do
     case stop_profiling(state) do
       :ok ->
         {:noreply, %Freddie.Utils.Fprof{state | is_active: false}}
+
       :error ->
         {:noreply, state}
     end
@@ -63,7 +65,7 @@ defmodule Freddie.Utils.Fprof do
 
   @impl true
   def handle_info(msg, state) do
-    Logger.warn("Received unknown msg!!! - #{inspect msg}")
+    Logger.warn("Received unknown msg!!! - #{inspect(msg)}")
     {:noreply, state}
   end
 
@@ -74,6 +76,7 @@ defmodule Freddie.Utils.Fprof do
         :fprof.profile()
         :fprof.analyse(totals: false, dest: state.file_path)
         :ok
+
       false ->
         Logger.warn("Start profiling first!")
         :error

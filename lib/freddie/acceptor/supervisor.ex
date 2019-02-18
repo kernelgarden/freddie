@@ -16,7 +16,7 @@ defmodule Freddie.Acceptor.Supervisor do
   end
 
   def handle_info({:exit, from, reason}, state) do
-    Logger.error(fn -> "acceptor #{inspect from} is down. reason: #{inspect reason}" end)
+    Logger.error(fn -> "acceptor #{inspect(from)} is down. reason: #{inspect(reason)}" end)
     {:noreply, state}
   end
 

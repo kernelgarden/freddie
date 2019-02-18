@@ -24,7 +24,7 @@ defmodule Freddie.Listener.Supervisor do
   end
 
   def handle_info({:EXIT, from, reason}, state) do
-    Logger.error(fn -> "#{inspect from} is down. reason: #{inspect reason}" end)
+    Logger.error(fn -> "#{inspect(from)} is down. reason: #{inspect(reason)}" end)
     {:noreply, state}
   end
 end

@@ -1,5 +1,4 @@
 defmodule Freddie.Router do
-
   require Logger
 
   @root_module SchemeTable
@@ -27,21 +26,22 @@ defmodule Freddie.Router do
     |> Enum.with_index()
     |> IO.inspect(label: "[DEBUG] => ")
     |> Enum.map(fn {def, idx} ->
-        {{:msg, protocol_mod}, _} = def
+      {{:msg, protocol_mod}, _} = def
 
-        {protocol_mod, idx}
-      end)
+      {protocol_mod, idx}
+    end)
     |> generate_scheme_table()
   end
 
   defmacro handler(protocol, body) do
     quote bind_quoted: [
-      protocol: Macro.escape(protocol, unquote: true),
-      body: Macro.escape(body, unquote: true)
-    ] do
-      protocol_seq = quote do
-        get_scheme_seq(unquote(protocol))
-      end
+            protocol: Macro.escape(protocol, unquote: true),
+            body: Macro.escape(body, unquote: true)
+          ] do
+      protocol_seq =
+        quote do
+          get_scheme_seq(unquote(protocol))
+        end
 
       defp internal_dispatch(protocol_seq, var!(meta), payload, var!(socket)) do
         protocol_mod = unquote(protocol)

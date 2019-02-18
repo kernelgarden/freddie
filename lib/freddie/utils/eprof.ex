@@ -35,12 +35,15 @@ defmodule Freddie.Utils.Eprof do
     case state.is_active do
       false ->
         Logger.info("Start profiling with eprof")
+
         case :eprof.start_profiling([Process.whereis(target)]) do
           :profiling ->
             {:noreply, %Freddie.Utils.Eprof{state | is_active: true}}
+
           {:error, reason} ->
             Logger.error("Error occured from :eprof.start_profiling/1 - #{reason}")
         end
+
       true ->
         Logger.warn("Already started eprof!!!")
         {:noreply, state}
@@ -52,6 +55,7 @@ defmodule Freddie.Utils.Eprof do
     case stop_profiling(state) do
       :ok ->
         {:noreply, %Freddie.Utils.Eprof{state | is_active: false}}
+
       :error ->
         {:noreply, state}
     end
@@ -67,7 +71,7 @@ defmodule Freddie.Utils.Eprof do
 
   @impl true
   def handle_info(msg, state) do
-    Logger.warn("Received unknown msg!!! - #{inspect msg}")
+    Logger.warn("Received unknown msg!!! - #{inspect(msg)}")
     {:noreply, state}
   end
 
@@ -79,6 +83,7 @@ defmodule Freddie.Utils.Eprof do
         :eprof.log(state.file_path)
         :eprof.analyze()
         :ok
+
       false ->
         Logger.warn("Start profiling first!")
         :error

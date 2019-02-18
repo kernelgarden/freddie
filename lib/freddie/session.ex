@@ -6,7 +6,13 @@ defmodule Freddie.Session do
   @resend_queue_flush_time 16
   @max_resend_round 5
 
-  defstruct socket: nil, addr: nil, buffer: <<>>, packet_handler_mod: nil, send_queue: <<>>, is_send_queue_dirty: false, cur_resend_round: 0
+  defstruct socket: nil,
+            addr: nil,
+            buffer: <<>>,
+            packet_handler_mod: nil,
+            send_queue: <<>>,
+            is_send_queue_dirty: false,
+            cur_resend_round: 0
 
   def start_link() do
     GenServer.start_link(__MODULE__, nil)
@@ -21,6 +27,7 @@ defmodule Freddie.Session do
       :port_is_busy ->
         [{_, pid}] = :ets.lookup(:user_sessions, socket)
         GenServer.cast(pid, {:resend, data})
+
       other ->
         other
     end
@@ -28,10 +35,14 @@ defmodule Freddie.Session do
 
   defp internal_send(socket, data) do
     case Freddie.Transport.port_cmd(socket, data) do
-      :ok -> :ok
-      :port_is_busy -> :port_is_busy
+      :ok ->
+        :ok
+
+      :port_is_busy ->
+        :port_is_busy
+
       error ->
-        #Logger.error("error occurred #{inspect error}")
+        # Logger.error("error occurred #{inspect error}")
         error
     end
   end
@@ -57,7 +68,12 @@ defmodule Freddie.Session do
         :packet_handler_mod
       )
 
-    state = %Freddie.Session{buffer: <<>>, packet_handler_mod: packet_handler_mod, send_queue: <<>>}
+    state = %Freddie.Session{
+      buffer: <<>>,
+      packet_handler_mod: packet_handler_mod,
+      send_queue: <<>>
+    }
+
     {:ok, state}
   end
 
@@ -96,14 +112,16 @@ defmodule Freddie.Session do
     {new_send_queue, new_dirty_flag, new_resend_round} =
       case state.is_send_queue_dirty do
         true ->
-            case internal_send(state.socket, state.send_queue) do
-              :ok ->
-                Logger.info("resend succcess! queue_size: #{byte_size(state.send_queue)}")
-                {<<>>, false, 0}
-              _ ->
-                Logger.info("resend fail! queue_size: #{byte_size(state.send_queue)}")
-                {state.send_queue, true, get_max_resend_round(state.cur_resend_round)}
-            end
+          case internal_send(state.socket, state.send_queue) do
+            :ok ->
+              Logger.info("resend succcess! queue_size: #{byte_size(state.send_queue)}")
+              {<<>>, false, 0}
+
+            _ ->
+              Logger.info("resend fail! queue_size: #{byte_size(state.send_queue)}")
+              {state.send_queue, true, get_max_resend_round(state.cur_resend_round)}
+          end
+
         false ->
           {state.send_queue, false, state.cur_resend_round}
       end
@@ -111,12 +129,23 @@ defmodule Freddie.Session do
     # add flow control??
     Process.send_after(self(), {:flush}, @resend_queue_flush_time)
 
-    {:noreply, %Freddie.Session{state | send_queue: new_send_queue, is_send_queue_dirty: new_dirty_flag, cur_resend_round: new_resend_round}}
+    {:noreply,
+     %Freddie.Session{
+       state
+       | send_queue: new_send_queue,
+         is_send_queue_dirty: new_dirty_flag,
+         cur_resend_round: new_resend_round
+     }}
   end
 
   @impl true
   def handle_cast({:resend, data}, state) do
-    new_state = %Freddie.Session{state | send_queue: <<data::binary, state.send_queue::binary>>, is_send_queue_dirty: true}
+    new_state = %Freddie.Session{
+      state
+      | send_queue: <<data::binary, state.send_queue::binary>>,
+        is_send_queue_dirty: true
+    }
+
     {:noreply, new_state}
   end
 
@@ -128,13 +157,13 @@ defmodule Freddie.Session do
 
   @impl true
   def handle_info({:inet_reply, _, :ok}, state) do
-    #todo
+    # todo
     {:noreply, state}
   end
 
   @impl true
   def handle_info({:inet_reply, _, status}, state) do
-    #Logger.error("[Session] send failed #{inspect status}")
+    # Logger.error("[Session] send failed #{inspect status}")
     {:noreply, state}
   end
 
@@ -150,7 +179,7 @@ defmodule Freddie.Session do
 
   @impl true
   def handle_info(msg, state) do
-    Logger.warn("Received unknown msg!!! - #{inspect msg}")
+    Logger.warn("Received unknown msg!!! - #{inspect(msg)}")
     {:noreply, state}
   end
 
@@ -161,7 +190,7 @@ defmodule Freddie.Session do
 
   @impl true
   def terminate(_reason, state) do
-    #Logger.error(fn -> "Client #{state.addr} terminated." end)
+    # Logger.error(fn -> "Client #{state.addr} terminated." end)
     :ets.delete(:user_sessions, state.socket)
     :ok
   end

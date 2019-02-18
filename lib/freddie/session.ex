@@ -178,6 +178,12 @@ defmodule Freddie.Session do
   end
 
   @impl true
+  def handle_info({:tcp_error, _socket, reason}, state) do
+    # todo: handle errors
+    {:noreply, state}
+  end
+
+  @impl true
   def handle_info(msg, state) do
     Logger.warn("Received unknown msg!!! - #{inspect(msg)}")
     {:noreply, state}

@@ -36,4 +36,8 @@ defmodule Freddie.Session.PacketHandler do
         {:not_enough_data, buffer}
     end
   end
+
+  defp parse(buffer, _session) do
+    {:not_enough_data, buffer}
+  end
 end

@@ -12,7 +12,7 @@ defmodule Freddie.Session do
             packet_handler_mod: nil,
             send_queue: <<>>,
             is_send_queue_dirty: false,
-            cur_resend_round: 0
+            cur_resend_round: 1
 
   def start_link() do
     GenServer.start_link(__MODULE__, nil)
@@ -25,8 +25,16 @@ defmodule Freddie.Session do
   def send(socket, data) do
     case internal_send(socket, data) do
       :port_is_busy ->
-        [{_, pid}] = :ets.lookup(:user_sessions, socket)
-        GenServer.cast(pid, {:resend, data})
+        case :ets.lookup(:user_sessions, socket) do
+          [{_, pid} | _] ->
+            GenServer.cast(pid, {:resend, data})
+
+          [] ->
+            {:error, {:send, :unknown_socket}}
+
+          other ->
+            other
+        end
 
       other ->
         other
@@ -71,7 +79,8 @@ defmodule Freddie.Session do
     state = %Freddie.Session{
       buffer: <<>>,
       packet_handler_mod: packet_handler_mod,
-      send_queue: <<>>
+      send_queue: <<>>,
+      cur_resend_round: 1
     }
 
     {:ok, state}
@@ -115,7 +124,7 @@ defmodule Freddie.Session do
           case internal_send(state.socket, state.send_queue) do
             :ok ->
               Logger.info("resend succcess! queue_size: #{byte_size(state.send_queue)}")
-              {<<>>, false, 0}
+              {<<>>, false, 1}
 
             _ ->
               Logger.info("resend fail! queue_size: #{byte_size(state.send_queue)}")
@@ -127,7 +136,7 @@ defmodule Freddie.Session do
       end
 
     # add flow control??
-    Process.send_after(self(), {:flush}, @resend_queue_flush_time)
+    Process.send_after(self(), {:flush}, @resend_queue_flush_time * new_resend_round)
 
     {:noreply,
      %Freddie.Session{

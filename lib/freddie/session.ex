@@ -109,9 +109,9 @@ defmodule Freddie.Session do
     Process.send_after(self(), {:flush}, @resend_queue_flush_time)
 
     state.packet_handler_mod.dispatch(
-          :connect,
-          state.socket
-        )
+      :connect,
+      state.socket
+    )
 
     {:noreply, state}
   end
@@ -135,11 +135,11 @@ defmodule Freddie.Session do
         true ->
           case internal_send(state.socket, state.send_queue) do
             :ok ->
-              #Logger.info("resend succcess! queue_size: #{byte_size(state.send_queue)}")
+              # Logger.info("resend succcess! queue_size: #{byte_size(state.send_queue)}")
               {<<>>, false, 1}
 
             _ ->
-              #Logger.info("resend fail! queue_size: #{byte_size(state.send_queue)}")
+              # Logger.info("resend fail! queue_size: #{byte_size(state.send_queue)}")
               {state.send_queue, true, get_max_resend_round(state.cur_resend_round)}
           end
 
@@ -219,9 +219,9 @@ defmodule Freddie.Session do
   def terminate(_reason, state) do
     # Logger.error(fn -> "Client #{state.addr} terminated." end)
     state.packet_handler_mod.dispatch(
-          :disconnect,
-          state.socket
-        )
+      :disconnect,
+      state.socket
+    )
 
     :ets.delete(:user_sessions, state.socket)
     :ok

@@ -49,8 +49,8 @@ defmodule Freddie.Router do
 
   defmacro disconnect(body) do
     quote bind_quoted: [
-      body: Macro.escape(body, unquote: true)
-    ] do
+            body: Macro.escape(body, unquote: true)
+          ] do
       defp internal_dispatch(:disconnect, var!(socket)) do
         unquote(body[:do])
       end
@@ -59,8 +59,8 @@ defmodule Freddie.Router do
 
   defmacro connect(body) do
     quote bind_quoted: [
-      body: Macro.escape(body, unquote: true)
-    ] do
+            body: Macro.escape(body, unquote: true)
+          ] do
       defp internal_dispatch(:connect, var!(socket)) do
         unquote(body[:do])
       end
@@ -79,7 +79,6 @@ defmodule Freddie.Router do
   defp prelude() do
     quote do
       @before_compile unquote(__MODULE__)
-
     end
   end
 
@@ -100,14 +99,17 @@ defmodule Freddie.Router do
       nil ->
         Logger.warn("packet_handler_mod doesn't registered")
         :abort
+
       mod ->
         case function_exported?(mod, :defs, 0) do
           # Not need to compile
           true ->
             Logger.info("packet_handler_mod: #{mod}")
+
             mod
             |> make_schemes()
             |> generate_scheme_table()
+
             :ok
 
           # To compile first! Not defined protocols
@@ -122,18 +124,20 @@ defmodule Freddie.Router do
     case load_packet_handler_mod() do
       nil ->
         Logger.warn("packet_handler_mod doesn't registered")
+
       mod ->
-            Logger.info("packet_handler_mod: #{mod}")
-            mod
-            |> make_schemes()
-            |> generate_scheme_table()
+        Logger.info("packet_handler_mod: #{mod}")
+
+        mod
+        |> make_schemes()
+        |> generate_scheme_table()
     end
   end
 
   defp make_schemes(packet_handler_mod) do
     packet_handler_mod.defs()
     |> Enum.with_index()
-    #|> IO.inspect(label: "[DEBUG] => ")
+    # |> IO.inspect(label: "[DEBUG] => ")
     |> Enum.map(fn {def, idx} ->
       {{:msg, protocol_mod}, _} = def
 

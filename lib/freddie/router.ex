@@ -22,9 +22,16 @@ defmodule Freddie.Router do
         :scheme_root_mod
       )
 
+    case packet_handler_mod do
+      nil ->
+        Logger.warn("packet_handler_mod doesn't registered")
+      mod ->
+        Logger.info("packet_handler_mod: #{mod}")
+    end
+
     packet_handler_mod.defs()
     |> Enum.with_index()
-    |> IO.inspect(label: "[DEBUG] => ")
+    #|> IO.inspect(label: "[DEBUG] => ")
     |> Enum.map(fn {def, idx} ->
       {{:msg, protocol_mod}, _} = def
 

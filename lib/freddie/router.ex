@@ -3,6 +3,8 @@ defmodule Freddie.Router do
 
   @root_module SchemeTable
 
+  @on_load :load_scheme_table
+
   defmacro __using__(_opts) do
     quote do
       import Freddie.Router
@@ -16,28 +18,7 @@ defmodule Freddie.Router do
   end
 
   defmacro __before_compile__(_env) do
-    packet_handler_mod =
-      Application.get_env(
-        :freddie,
-        :scheme_root_mod
-      )
-
-    case packet_handler_mod do
-      nil ->
-        Logger.warn("packet_handler_mod doesn't registered")
-      mod ->
-        Logger.info("packet_handler_mod: #{mod}")
-    end
-
-    packet_handler_mod.defs()
-    |> Enum.with_index()
-    #|> IO.inspect(label: "[DEBUG] => ")
-    |> Enum.map(fn {def, idx} ->
-      {{:msg, protocol_mod}, _} = def
-
-      {protocol_mod, idx}
-    end)
-    |> generate_scheme_table()
+    load_scheme_table()
   end
 
   defmacro handler(protocol, body) do
@@ -58,6 +39,11 @@ defmodule Freddie.Router do
     end
   end
 
+  def lookup(scheme) do
+    root_mod = root_mod_term()
+    apply(root_mod, Freddie.Router.Builder.key_to_term(scheme), [])
+  end
+
   defp internal_dispatch(unknown_seq, _, _, _) do
     Logger.warn("received unkown protocol #{unknown_seq}")
   end
@@ -65,10 +51,42 @@ defmodule Freddie.Router do
   defp prelude() do
     quote do
       @before_compile unquote(__MODULE__)
+
     end
   end
 
   defp root_mod_term(), do: :"#{@root_module}"
+
+  def load_scheme_table() do
+    packet_handler_mod =
+      Application.get_env(
+        :freddie,
+        :scheme_root_mod
+      )
+
+    case packet_handler_mod do
+      nil ->
+        Logger.warn("packet_handler_mod doesn't registered")
+        :abort
+      mod ->
+        Logger.info("packet_handler_mod: #{mod}")
+        packet_handler_mod
+        |> make_schemes()
+        |> generate_scheme_table()
+        :ok
+    end
+  end
+
+  defp make_schemes(packet_handler_mod) do
+    packet_handler_mod.defs()
+    |> Enum.with_index()
+    #|> IO.inspect(label: "[DEBUG] => ")
+    |> Enum.map(fn {def, idx} ->
+      {{:msg, protocol_mod}, _} = def
+
+      {protocol_mod, idx}
+    end)
+  end
 
   defp generate_scheme_table(schemes) do
     module = root_mod_term()
@@ -78,6 +96,7 @@ defmodule Freddie.Router do
     :ok
   end
 
+  # Use only in macro!
   defp get_scheme_seq(scheme) do
     root_mod = root_mod_term()
     func_name = Freddie.Router.Builder.key_to_term(scheme)

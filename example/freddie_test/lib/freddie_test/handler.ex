@@ -5,7 +5,7 @@ defmodule FreddieTest.Handler do
 
   alias FreddieTest.Scheme
 
-  tcp Scheme.Echo do
+  handler Scheme.Echo do
     echo = Scheme.Echo.new(msg: msg.msg)
     Freddie.Session.send(socket, echo)
   end

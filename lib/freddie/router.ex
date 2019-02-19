@@ -26,10 +26,10 @@ defmodule Freddie.Router do
   end
 
   defmacro __before_compile__(_env) do
-    load_scheme_table()
+    compile_scheme_table()
   end
 
-  defmacro tcp(protocol, body) do
+  defmacro handler(protocol, body) do
     quote bind_quoted: [
             protocol: Macro.escape(protocol, unquote: true),
             body: Macro.escape(body, unquote: true)
@@ -85,23 +85,48 @@ defmodule Freddie.Router do
 
   defp root_mod_term(), do: :"#{@root_module}"
 
-  def load_scheme_table() do
+  defp load_packet_handler_mod() do
     packet_handler_mod =
       Application.get_env(
         :freddie,
         :scheme_root_mod
       )
 
-    case packet_handler_mod do
+    packet_handler_mod
+  end
+
+  def load_scheme_table() do
+    case load_packet_handler_mod() do
       nil ->
         Logger.warn("packet_handler_mod doesn't registered")
         :abort
       mod ->
-        Logger.info("packet_handler_mod: #{mod}")
-        packet_handler_mod
-        |> make_schemes()
-        |> generate_scheme_table()
-        :ok
+        case function_exported?(mod, :defs, 0) do
+          # Not need to compile
+          true ->
+            Logger.info("packet_handler_mod: #{mod}")
+            mod
+            |> make_schemes()
+            |> generate_scheme_table()
+            :ok
+
+          # To compile first! Not defined protocols
+          false ->
+            # pass now
+            :ok
+        end
+    end
+  end
+
+  defp compile_scheme_table() do
+    case load_packet_handler_mod() do
+      nil ->
+        Logger.warn("packet_handler_mod doesn't registered")
+      mod ->
+            Logger.info("packet_handler_mod: #{mod}")
+            mod
+            |> make_schemes()
+            |> generate_scheme_table()
     end
   end
 

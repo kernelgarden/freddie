@@ -5,13 +5,16 @@ defmodule FreddieTest.Handler do
 
   alias FreddieTest.Scheme
 
-  handler Scheme.Echo do
+  tcp Scheme.Echo do
     echo = Scheme.Echo.new(msg: msg.msg)
-    case Freddie.Scheme.Common.new_message(echo) do
-      resp ->
-        Freddie.Session.send(socket, resp)
-      {:error, reason} ->
-        Logger.error("Failed to send, reason: #{reason}")
-    end
+    Freddie.Session.send(socket, echo)
+  end
+
+  connect do
+    Logger.info("Client #{inspect socket} is connected!")
+  end
+
+  disconnect do
+    Logger.info("Client #{inspect socket} is disconnected!")
   end
 end

@@ -13,6 +13,14 @@ defmodule Freddie.Router do
         internal_dispatch(command, meta, payload, socket)
       end
 
+      def dispatch(:disconnect, socket) do
+        internal_dispatch(:disconnect, socket)
+      end
+
+      def dispatch(:connect, socket) do
+        internal_dispatch(:connect, socket)
+      end
+
       unquote(prelude())
     end
   end
@@ -21,7 +29,7 @@ defmodule Freddie.Router do
     load_scheme_table()
   end
 
-  defmacro handler(protocol, body) do
+  defmacro tcp(protocol, body) do
     quote bind_quoted: [
             protocol: Macro.escape(protocol, unquote: true),
             body: Macro.escape(body, unquote: true)
@@ -34,6 +42,26 @@ defmodule Freddie.Router do
       defp internal_dispatch(protocol_seq, var!(meta), payload, var!(socket)) do
         protocol_mod = unquote(protocol)
         var!(msg) = protocol_mod.decode(payload)
+        unquote(body[:do])
+      end
+    end
+  end
+
+  defmacro disconnect(body) do
+    quote bind_quoted: [
+      body: Macro.escape(body, unquote: true)
+    ] do
+      defp internal_dispatch(:disconnect, var!(socket)) do
+        unquote(body[:do])
+      end
+    end
+  end
+
+  defmacro connect(body) do
+    quote bind_quoted: [
+      body: Macro.escape(body, unquote: true)
+    ] do
+      defp internal_dispatch(:connect, var!(socket)) do
         unquote(body[:do])
       end
     end

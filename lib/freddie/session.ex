@@ -22,22 +22,29 @@ defmodule Freddie.Session do
     Process.send(pid, {:socket_ready, socket}, [:noconnect])
   end
 
-  def send(socket, data) do
-    case internal_send(socket, data) do
-      :port_is_busy ->
-        case :ets.lookup(:user_sessions, socket) do
-          [{_, pid} | _] ->
-            GenServer.cast(pid, {:resend, data})
+  def send(socket, msg) do
+    case Freddie.Scheme.Common.new_message(msg) do
+      data ->
+        case internal_send(socket, data) do
+          :port_is_busy ->
+            case :ets.lookup(:user_sessions, socket) do
+              [{_, pid} | _] ->
+                GenServer.cast(pid, {:resend, data})
 
-          [] ->
-            {:error, {:send, :unknown_socket}}
+              [] ->
+                {:error, {:send, :unknown_socket}}
+
+              other ->
+                other
+            end
 
           other ->
             other
         end
 
-      other ->
-        other
+      {:error, reason} ->
+        Logger.error("Failed to send, reason: #{reason}")
+        {:error, reason}
     end
   end
 
@@ -100,6 +107,11 @@ defmodule Freddie.Session do
 
     # To implement global timer??
     Process.send_after(self(), {:flush}, @resend_queue_flush_time)
+
+    state.packet_handler_mod.dispatch(
+          :connect,
+          state.socket
+        )
 
     {:noreply, state}
   end
@@ -206,6 +218,11 @@ defmodule Freddie.Session do
   @impl true
   def terminate(_reason, state) do
     # Logger.error(fn -> "Client #{state.addr} terminated." end)
+    state.packet_handler_mod.dispatch(
+          :disconnect,
+          state.socket
+        )
+
     :ets.delete(:user_sessions, state.socket)
     :ok
   end

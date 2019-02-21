@@ -23,11 +23,12 @@ defmodule Freddie.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:connection, "~> 1.0.4"},
       {:poolboy, "~> 1.5"},
       {:gen_stage, "~> 0.14.1"},
       {:exprotobuf, "~> 1.2.9"},
-      {:exprof, "~> 0.2.0"}
+      {:exprof, "~> 0.2.0"},
+      {:quantum, "~> 2.3.4"},
+      {:timex, "~> 3.0"}
     ]
   end
 

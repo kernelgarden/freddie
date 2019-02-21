@@ -27,6 +27,12 @@ defmodule Freddie do
   defp build_children(port, activate_fprof, activate_eprof) do
     children = []
 
+    # Quantum Scheduler
+    children =
+      [
+        {Freddie.Scheduler, []}
+      ] ++ children
+
     # Eprof
     children =
       case activate_eprof do

@@ -1,0 +1,6 @@
+syntax = "proto3";
+package Common;
+
+message ConnectionInfoReply {
+    BigInteger client_pub_key = 1;
+}

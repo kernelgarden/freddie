@@ -6,6 +6,7 @@ message Message {
         int32 id = 1;
         int32 command = 4;
         int32 timestamp = 5;
+        bool use_encryption = 6;
     }
 
     Meta meta = 1;

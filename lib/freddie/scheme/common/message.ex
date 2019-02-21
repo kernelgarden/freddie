@@ -1,19 +1,5 @@
 defmodule Freddie.Scheme.Common do
-  use Protobuf, """
-  syntax = "proto3";
-  package Common;
-
-  message Message{
-    message Meta {
-      required int32 id = 1;
-      required int32 command = 4;
-      required int32 timestamp = 5;
-    }
-
-    required Meta meta = 1;
-    required bytes payload = 2;
-  }
-  """
+  use Protobuf, from: Path.wildcard(Path.expand("./definitions/**/*.proto", __DIR__))
 
   alias Freddie.Utils
   alias Freddie.Scheme.Common.Message

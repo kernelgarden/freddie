@@ -1,0 +1,6 @@
+syntax = "proto3";
+package Common;
+
+message BigInteger {
+    bytes value = 1;
+}

@@ -67,18 +67,25 @@ defmodule Freddie.Router do
     end
   end
 
+  defp internal_dispatch(unknown_seq, _, _, _) do
+    Logger.warn("received unkown protocol #{unknown_seq}")
+  end
+
   def lookup(scheme) do
     root_mod = root_mod_term()
     apply(root_mod, Freddie.Router.Builder.key_to_term(scheme), [])
   end
 
-  defp internal_dispatch(unknown_seq, _, _, _) do
-    Logger.warn("received unkown protocol #{unknown_seq}")
-  end
-
   defp prelude() do
     quote do
       @before_compile unquote(__MODULE__)
+
+    end
+  end
+
+  defp make_internal_handler() do
+    quote do
+
     end
   end
 

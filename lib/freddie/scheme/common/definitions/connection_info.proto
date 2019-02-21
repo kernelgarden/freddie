@@ -1,0 +1,12 @@
+syntax = "proto3";
+package Common;
+
+message ConnectionInfo {
+    message KeyExchangeInfo {
+        int32 generator = 1;
+        BigInteger prime = 2;
+        BigInteger pub_key = 3;
+    }
+
+    KeyExchangeInfo key_info = 1;
+}

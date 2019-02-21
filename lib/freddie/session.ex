@@ -113,6 +113,9 @@ defmodule Freddie.Session do
       state.socket
     )
 
+    # hand shake
+
+
     {:noreply, state}
   end
 

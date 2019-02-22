@@ -8,9 +8,7 @@ defmodule Freddie.Acceptor do
   defstruct listen_socket: nil, acceptor_ref: nil, acceptor_idx: 0
 
   def start_link(idx) do
-    GenServer.start_link(__MODULE__, [idx: idx],
-      name: Acceptor.Supervisor.make_acceptor_name(idx)
-    )
+    GenServer.start_link(__MODULE__, [idx: idx], name: Acceptor.Supervisor.make_acceptor_name(idx))
   end
 
   # Todo: tune buf size

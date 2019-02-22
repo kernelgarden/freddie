@@ -117,7 +117,6 @@ defmodule Freddie.Session do
 
     # hand shake
 
-
     {:noreply, state}
   end
 

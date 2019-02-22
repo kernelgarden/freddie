@@ -4,7 +4,7 @@ defmodule Freddie.Security.Aes do
   alias __MODULE__
 
   @cipher_mode :aes_gcm
-  @aad "AES256GCM"
+  @aad "FREDDIE_AES256GCM"
   @iv_size 16
   @tag_size 16
 
@@ -13,12 +13,15 @@ defmodule Freddie.Security.Aes do
   end
 
   def generate_aes_key(secret_key) do
-    {:error, {:generate_aes_key, "not valid type #{inspect secret_key}"}}
+    {:error, {:generate_aes_key, "not valid type #{inspect(secret_key)}"}}
   end
 
   def encrypt(aes_key, value) do
     iv = :crypto.strong_rand_bytes(@iv_size)
-    {cipher_text, cipher_tag} = :crypto.block_encrypt(@cipher_mode, aes_key, iv, {@aad, value, @tag_size})
+
+    {cipher_text, cipher_tag} =
+      :crypto.block_encrypt(@cipher_mode, aes_key, iv, {@aad, value, @tag_size})
+
     iv <> cipher_tag <> cipher_text
   end
 
@@ -28,18 +31,46 @@ defmodule Freddie.Security.Aes do
   end
 
   def test() do
-    key = :crypto.strong_rand_bytes(32)
-    |> IO.inspect(label: "[Debug] key: ")
+    client_private_key =
+      Freddie.Security.DiffieHellman.generate_private_key()
+      |> IO.inspect(label: "[Debug] client_private_key: ")
 
-    aes_key = Aes.generate_aes_key(key)
-    |> IO.inspect(label: "[Debug] aes_key: ")
+    server_private_key =
+      Freddie.Security.DiffieHellman.generate_private_key()
+      |> IO.inspect(label: "[Debug] server_private_key: ")
+
+    client_public_key =
+      Freddie.Security.DiffieHellman.generate_public_key(client_private_key)
+      |> IO.inspect(label: "[Debug] client_public_key: ")
+
+    server_public_key =
+      Freddie.Security.DiffieHellman.generate_public_key(server_private_key)
+      |> IO.inspect(label: "[Debug] server_public_key: ")
+
+    client_secret_key =
+      Freddie.Security.DiffieHellman.generate_secret_key(server_public_key, client_private_key)
+      |> IO.inspect(label: "[Debug] client_secret_key: ")
+
+    server_secret_key =
+      Freddie.Security.DiffieHellman.generate_secret_key(client_public_key, server_private_key)
+      |> IO.inspect(label: "[Debug] server_secret_key: ")
+
+    key =
+      server_secret_key
+      |> IO.inspect(label: "[Debug] key: ")
+
+    aes_key =
+      Aes.generate_aes_key(key)
+      |> IO.inspect(label: "[Debug] aes_key: ")
 
     plain_text = "plain text.plain text.plain text.plain text."
 
-    cipher_block = Aes.encrypt(aes_key, plain_text)
-    |> IO.inspect(label: "[Debug] cipher_block: ")
+    cipher_block =
+      Aes.encrypt(aes_key, plain_text)
+      |> IO.inspect(label: "[Debug] cipher_block: ")
 
-    decrypt_text = Aes.decrypt(aes_key, cipher_block)
-    |> IO.inspect(label: "[Debug] decrypt_text: ")
+    decrypt_text =
+      Aes.decrypt(aes_key, cipher_block)
+      |> IO.inspect(label: "[Debug] decrypt_text: ")
   end
 end

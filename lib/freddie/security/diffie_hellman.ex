@@ -1,21 +1,18 @@
 defmodule Freddie.Security.DiffieHellman do
-
   # https://tools.ietf.org/html/rfc2409#page-21
-  @oakley_group_2 179769313486231590770839156793787453197860296048756011706444423684197180216158519368947833795864925541502180565485980503646440548199239100050792877003355816639229553136239076508735759914822574862575007425302077447712589550957937778424442426617334727629299387668709205606050270810842907692932019128194467627007
+  @oakley_group_2 179_769_313_486_231_590_770_839_156_793_787_453_197_860_296_048_756_011_706_444_423_684_197_180_216_158_519_368_947_833_795_864_925_541_502_180_565_485_980_503_646_440_548_199_239_100_050_792_877_003_355_816_639_229_553_136_239_076_508_735_759_914_822_574_862_575_007_425_302_077_447_712_589_550_957_937_778_424_442_426_617_334_727_629_299_387_668_709_205_606_050_270_810_842_907_692_932_019_128_194_467_627_007
   @base_number 2
+  @private_key_size 160
 
   def generate_secret_key(client_public_key, server_private_key) do
-    #:binary.decode_unsigned(:crypto.mod_pow(client_public_key, server_private_key, @oakley_group_2))
     :crypto.mod_pow(client_public_key, server_private_key, @oakley_group_2)
   end
 
   def generate_public_key(server_private_key) do
-    #:binary.decode_unsigned(:crypto.mod_pow(@base_number, server_private_key, @oakley_group_2))
     :crypto.mod_pow(@base_number, server_private_key, @oakley_group_2)
   end
 
-  # use 20 of bits length integer
   def generate_private_key() do
-    Enum.random(144115188075855872..1152921504606846975)
+    :binary.decode_unsigned(:crypto.strong_rand_bytes(@private_key_size))
   end
 end

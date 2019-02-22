@@ -1,5 +1,8 @@
 defmodule Freddie.Scheme.Common do
-  use Protobuf, from: Path.wildcard(Path.expand("./definitions/**/*.proto", __DIR__)), use_package_names: true, namespace: "Elixir.Freddie.Scheme"
+  use Protobuf,
+    from: Path.wildcard(Path.expand("./definitions/**/*.proto", __DIR__)),
+    use_package_names: true,
+    namespace: "Elixir.Freddie.Scheme"
 
   alias Freddie.Utils
   alias Freddie.Scheme.Common.Message

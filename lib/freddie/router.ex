@@ -89,8 +89,8 @@ defmodule Freddie.Router do
 
   defmacro make_internal_handler(internal_schemes) do
     quote bind_quoted: [
-      internal_schemes: Macro.escape(internal_schemes, unquote: true)
-    ] do
+            internal_schemes: Macro.escape(internal_schemes, unquote: true)
+          ] do
       defp internal_dispatch() do
       end
     end
@@ -170,10 +170,13 @@ defmodule Freddie.Router do
         case protocol_mod do
           Freddie.Scheme.Common.BigInteger ->
             nil
+
           Freddie.Scheme.Common.Message ->
             nil
+
           Freddie.Scheme.Common.Message.Meta ->
             nil
+
           other ->
             {protocol_mod, -idx}
         end
@@ -182,6 +185,7 @@ defmodule Freddie.Router do
         case elem do
           nil ->
             acc
+
           other ->
             [elem | acc]
         end

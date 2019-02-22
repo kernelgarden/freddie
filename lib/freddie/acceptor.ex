@@ -3,12 +3,12 @@ defmodule Freddie.Acceptor do
 
   require Logger
 
+  alias __MODULE__
+
   defstruct listen_socket: nil, acceptor_ref: nil, acceptor_idx: 0
 
   def start_link(idx) do
-    GenServer.start_link(__MODULE__, [idx: idx],
-      name: Freddie.Acceptor.Supervisor.make_acceptor_name(idx)
-    )
+    GenServer.start_link(__MODULE__, [idx: idx], name: Acceptor.Supervisor.make_acceptor_name(idx))
   end
 
   # Todo: tune buf size
@@ -18,7 +18,7 @@ defmodule Freddie.Acceptor do
     idx = Keyword.get(args, :idx)
     [{_, listen_socket}] = :ets.lookup(:listen_socket, :sock)
     GenServer.cast(self(), {:init, listen_socket})
-    {:ok, %Freddie.Acceptor{acceptor_idx: idx}}
+    {:ok, %Acceptor{acceptor_idx: idx}}
   end
 
   @impl true
@@ -29,7 +29,7 @@ defmodule Freddie.Acceptor do
   @impl true
   def handle_cast({:init, listen_socket}, state) do
     {:ok, ref} = :prim_inet.async_accept(listen_socket, -1)
-    {:noreply, %Freddie.Acceptor{state | listen_socket: listen_socket, acceptor_ref: ref}}
+    {:noreply, %Acceptor{state | listen_socket: listen_socket, acceptor_ref: ref}}
   end
 
   @impl true
@@ -95,7 +95,7 @@ defmodule Freddie.Acceptor do
   defp accept(state) do
     case :prim_inet.async_accept(state.listen_socket, -1) do
       {:ok, new_ref} ->
-        {:noreply, %Freddie.Acceptor{state | acceptor_ref: new_ref}}
+        {:noreply, %Acceptor{state | acceptor_ref: new_ref}}
 
       :error ->
         {:stop, {:badtcp, {:async_accept}}, state}

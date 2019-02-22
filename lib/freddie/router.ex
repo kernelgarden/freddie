@@ -29,6 +29,9 @@ defmodule Freddie.Router do
     compile_scheme_table()
   end
 
+  defmacro __after_compile__(_env, _byte_code) do
+  end
+
   defmacro handler(protocol, body) do
     quote bind_quoted: [
             protocol: Macro.escape(protocol, unquote: true),
@@ -80,12 +83,16 @@ defmodule Freddie.Router do
     quote do
       @before_compile unquote(__MODULE__)
 
+      @after_compile unquote(__MODULE__)
     end
   end
 
-  defp make_internal_handler() do
-    quote do
-
+  defmacro make_internal_handler(internal_schemes) do
+    quote bind_quoted: [
+      internal_schemes: Macro.escape(internal_schemes, unquote: true)
+    ] do
+      defp internal_dispatch() do
+      end
     end
   end
 

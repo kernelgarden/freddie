@@ -5,11 +5,13 @@ defmodule Freddie.Security.DiffieHellman do
   @base_number 2
 
   def generate_secret_key(client_public_key, server_private_key) do
-    :binary.decode_unsigned(:crypto.mod_pow(client_public_key, server_private_key, @oakley_group_2))
+    #:binary.decode_unsigned(:crypto.mod_pow(client_public_key, server_private_key, @oakley_group_2))
+    :crypto.mod_pow(client_public_key, server_private_key, @oakley_group_2)
   end
 
   def generate_public_key(server_private_key) do
-    :binary.decode_unsigned(:crypto.mod_pow(@base_number, server_private_key, @oakley_group_2))
+    #:binary.decode_unsigned(:crypto.mod_pow(@base_number, server_private_key, @oakley_group_2))
+    :crypto.mod_pow(@base_number, server_private_key, @oakley_group_2)
   end
 
   # use 20 of bits length integer

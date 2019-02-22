@@ -142,14 +142,45 @@ defmodule Freddie.Router do
   end
 
   defp make_schemes(packet_handler_mod) do
-    packet_handler_mod.defs()
-    |> Enum.with_index()
-    # |> IO.inspect(label: "[DEBUG] => ")
-    |> Enum.map(fn {def, idx} ->
-      {{:msg, protocol_mod}, _} = def
+    custom_handler_schemes =
+      packet_handler_mod.defs()
+      |> Enum.with_index()
+      # |> IO.inspect(label: "[DEBUG] => ")
+      |> Enum.map(fn {def, idx} ->
+        {{:msg, protocol_mod}, _} = def
 
-      {protocol_mod, idx}
-    end)
+        {protocol_mod, idx}
+      end)
+
+    default_handler_schemes =
+      Freddie.Scheme.Common.defs()
+      |> Enum.with_index()
+      # |> IO.inspect(label: "[DEBUG] => ")
+      |> Enum.map(fn {def, idx} ->
+        {{:msg, protocol_mod}, _} = def
+
+        # Specify to avoid module here!
+        case protocol_mod do
+          Freddie.Scheme.Common.BigInteger ->
+            nil
+          Freddie.Scheme.Common.Message ->
+            nil
+          Freddie.Scheme.Common.Message.Meta ->
+            nil
+          other ->
+            {protocol_mod, -idx}
+        end
+      end)
+      |> Enum.reduce([], fn elem, acc ->
+        case elem do
+          nil ->
+            acc
+          other ->
+            [elem | acc]
+        end
+      end)
+
+    default_handler_schemes ++ custom_handler_schemes
   end
 
   defp generate_scheme_table(schemes) do

@@ -1,5 +1,7 @@
 syntax = "proto3";
-package Common;
+package common;
+
+//import "big_integer.proto";
 
 message ConnectionInfo {
     message KeyExchangeInfo {

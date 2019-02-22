@@ -3,6 +3,8 @@ defmodule Freddie.Session do
 
   require Logger
 
+  alias __MODULE__
+
   @resend_queue_flush_time 16
   @max_resend_round 5
 
@@ -24,6 +26,10 @@ defmodule Freddie.Session do
 
   def send(socket, msg) do
     case Freddie.Scheme.Common.new_message(msg) do
+      {:error, reason} ->
+        Logger.error("Failed to send, reason: #{reason}")
+        {:error, reason}
+
       data ->
         case internal_send(socket, data) do
           :port_is_busy ->
@@ -41,10 +47,6 @@ defmodule Freddie.Session do
           other ->
             other
         end
-
-      {:error, reason} ->
-        Logger.error("Failed to send, reason: #{reason}")
-        {:error, reason}
     end
   end
 
@@ -83,7 +85,7 @@ defmodule Freddie.Session do
         :packet_handler_mod
       )
 
-    state = %Freddie.Session{
+    state = %Session{
       buffer: <<>>,
       packet_handler_mod: packet_handler_mod,
       send_queue: <<>>,
@@ -99,11 +101,11 @@ defmodule Freddie.Session do
 
     {:ok, {addr, _port}} = :inet.peername(socket)
     addr_str = :inet.ntoa(addr)
-    state = %Freddie.Session{state | socket: socket, addr: addr_str}
+    state = %Session{state | socket: socket, addr: addr_str}
 
     :ets.insert(:user_sessions, {socket, self()})
 
-    Freddie.Session.Helper.activate_socket(socket)
+    Session.Helper.activate_socket(socket)
 
     # To implement global timer??
     Process.send_after(self(), {:flush}, @resend_queue_flush_time)
@@ -123,10 +125,10 @@ defmodule Freddie.Session do
   Incomming data handler
   """
   @impl true
-  def handle_info({:tcp, socket, data}, %Freddie.Session{buffer: buffer} = session)
+  def handle_info({:tcp, socket, data}, %Session{buffer: buffer} = session)
       when socket != nil do
-    new_session = %Freddie.Session{session | buffer: <<buffer::binary, data::binary>>}
-    new_session = Freddie.Session.PacketHandler.onRead(new_session)
+    new_session = %Session{session | buffer: <<buffer::binary, data::binary>>}
+    new_session = Session.PacketHandler.onRead(new_session)
 
     {:noreply, new_session}
   end
@@ -154,7 +156,7 @@ defmodule Freddie.Session do
     Process.send_after(self(), {:flush}, @resend_queue_flush_time * new_resend_round)
 
     {:noreply,
-     %Freddie.Session{
+     %Session{
        state
        | send_queue: new_send_queue,
          is_send_queue_dirty: new_dirty_flag,
@@ -164,7 +166,7 @@ defmodule Freddie.Session do
 
   @impl true
   def handle_cast({:resend, data}, state) do
-    new_state = %Freddie.Session{
+    new_state = %Session{
       state
       | send_queue: <<data::binary, state.send_queue::binary>>,
         is_send_queue_dirty: true
@@ -175,7 +177,7 @@ defmodule Freddie.Session do
 
   @impl true
   def handle_info({:tcp_passive, socket}, session) do
-    Freddie.Session.Helper.activate_socket(socket)
+    Session.Helper.activate_socket(socket)
     {:noreply, session}
   end
 

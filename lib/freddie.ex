@@ -30,7 +30,7 @@ defmodule Freddie do
     # Quantum Scheduler
     children =
       [
-        {Freddie.Scheduler, []}
+        #{Freddie.Scheduler, []}
       ] ++ children
 
     # Eprof

@@ -7,14 +7,14 @@ defmodule FreddieTest.Handler do
 
   handler Scheme.Echo do
     echo = Scheme.Echo.new(msg: msg.msg)
-    Freddie.Session.send(socket, echo)
+    Freddie.Session.send(context, echo)
   end
 
   connect do
-    Logger.info("Client #{inspect socket} is connected!")
+    Logger.info("Client #{inspect context} is connected!")
   end
 
   disconnect do
-    Logger.info("Client #{inspect socket} is disconnected!")
+    Logger.info("Client #{inspect context} is disconnected!")
   end
 end

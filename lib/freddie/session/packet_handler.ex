@@ -26,6 +26,7 @@ defmodule Freddie.Session.PacketHandler do
     case data do
       <<cur_data::binary-size(length), remain::binary>> ->
         session = Freddie.Context.get_session(context)
+
         session.packet_handler_mod.dispatch(
           Freddie.Scheme.Common.decode_message(cur_data),
           context

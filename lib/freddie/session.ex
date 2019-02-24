@@ -33,6 +33,7 @@ defmodule Freddie.Session do
 
       data ->
         session = Context.get_session(context)
+
         case internal_send(session.socket, data) do
           :port_is_busy ->
             case :ets.lookup(:user_sessions, session.socket) do
@@ -106,7 +107,7 @@ defmodule Freddie.Session do
     {:ok, {addr, _port}} = :inet.peername(socket)
     addr_str = :inet.ntoa(addr)
 
-    new_context = Context.update_session(context, [socket: socket, addr: addr_str])
+    new_context = Context.update_session(context, socket: socket, addr: addr_str)
     session = Context.get_session(new_context)
 
     :ets.insert(:user_sessions, {socket, self()})
@@ -130,9 +131,14 @@ defmodule Freddie.Session do
   Incomming data handler
   """
   @impl true
-  def handle_info({:tcp, socket, data}, %Context{session: %Session{buffer: buffer} = session} = context)
+  def handle_info(
+        {:tcp, socket, data},
+        %Context{session: %Session{buffer: buffer} = session} = context
+      )
       when socket != nil do
-    new_context = Context.set_session(context, %Session{session | buffer: <<buffer::binary, data::binary>>})
+    new_context =
+      Context.set_session(context, %Session{session | buffer: <<buffer::binary, data::binary>>})
+
     new_context = Session.PacketHandler.onRead(new_context)
 
     {:noreply, new_context}
@@ -162,7 +168,12 @@ defmodule Freddie.Session do
     # add flow control??
     Process.send_after(self(), {:flush}, @resend_queue_flush_time * new_resend_round)
 
-    new_context = Context.update_session(context, [send_queue: new_send_queue, is_send_queue_dirty: new_dirty_flag, cur_resend_round: new_resend_round])
+    new_context =
+      Context.update_session(context,
+        send_queue: new_send_queue,
+        is_send_queue_dirty: new_dirty_flag,
+        cur_resend_round: new_resend_round
+      )
 
     {:noreply, new_context}
   end
@@ -170,7 +181,12 @@ defmodule Freddie.Session do
   @impl true
   def handle_cast({:resend, data}, context) do
     session = Context.get_session(context)
-    new_context = Context.update_session(context, [send_queue: <<data::binary, session.send_queue::binary>>, is_send_queue_dirty: true])
+
+    new_context =
+      Context.update_session(context,
+        send_queue: <<data::binary, session.send_queue::binary>>,
+        is_send_queue_dirty: true
+      )
 
     {:noreply, new_context}
   end

@@ -8,14 +8,27 @@ defmodule Freddie.Security.Aes do
   @iv_size 16
   @tag_size 16
 
+  @spec generate_aes_key(any()) :: binary() | {:error, {:generate_aes_key, <<_::64, _::_*8>>}}
   def generate_aes_key(secret_key) when is_bitstring(secret_key) do
-    aes_key = :crypto.hash(:sha256, secret_key)
+    :crypto.hash(:sha256, secret_key)
   end
 
   def generate_aes_key(secret_key) do
     {:error, {:generate_aes_key, "not valid type #{inspect(secret_key)}"}}
   end
 
+  @spec encrypt(
+          binary()
+          | maybe_improper_list(
+              binary() | maybe_improper_list(any(), binary() | []) | byte(),
+              binary() | []
+            ),
+          binary()
+          | maybe_improper_list(
+              binary() | maybe_improper_list(any(), binary() | []) | byte(),
+              binary() | []
+            )
+        ) :: binary()
   def encrypt(aes_key, value) do
     iv = :crypto.strong_rand_bytes(@iv_size)
 
@@ -25,6 +38,14 @@ defmodule Freddie.Security.Aes do
     iv <> cipher_tag <> cipher_text
   end
 
+  @spec decrypt(
+          binary()
+          | maybe_improper_list(
+              binary() | maybe_improper_list(any(), binary() | []) | byte(),
+              binary() | []
+            ),
+          <<_::64, _::_*8>>
+        ) :: :error | binary()
   def decrypt(aes_key, cipher_block) do
     <<iv::binary-@iv_size, cipher_tag::binary-@tag_size, cipher_text::binary>> = cipher_block
     :crypto.block_decrypt(@cipher_mode, aes_key, iv, {@aad, cipher_text, cipher_tag})

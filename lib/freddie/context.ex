@@ -1,5 +1,4 @@
 defmodule Freddie.Context do
-
   require Logger
 
   alias __MODULE__

@@ -4,14 +4,17 @@ defmodule Freddie.Security.DiffieHellman do
   @base_number 2
   @private_key_size 160
 
+  @spec generate_secret_key(binary() | integer(), binary() | integer()) :: :error | binary()
   def generate_secret_key(client_public_key, server_private_key) do
     :crypto.mod_pow(client_public_key, server_private_key, @oakley_group_2)
   end
 
+  @spec generate_public_key(binary() | integer()) :: :error | binary()
   def generate_public_key(server_private_key) do
     :crypto.mod_pow(@base_number, server_private_key, @oakley_group_2)
   end
 
+  @spec generate_private_key() :: non_neg_integer()
   def generate_private_key() do
     :binary.decode_unsigned(:crypto.strong_rand_bytes(@private_key_size))
   end

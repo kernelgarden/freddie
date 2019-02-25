@@ -31,4 +31,5 @@ use Mix.Config
 
 config :freddie,
   scheme_root_mod: FreddieTest.Scheme,
+  packet_type_mod: FreddieTest.Packets.Types,
   packet_handler_mod: FreddieTest.Handler

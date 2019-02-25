@@ -13,9 +13,15 @@ defmodule Freddie.Session do
             addr: nil,
             buffer: <<>>,
             packet_handler_mod: nil,
+
+            # send queue
             send_queue: <<>>,
             is_send_queue_dirty: false,
-            cur_resend_round: 1
+            cur_resend_round: 1,
+
+            # encryption
+            is_established_encryption: false,
+            secret_key: 0
 
   def start_link() do
     GenServer.start_link(__MODULE__, nil)
@@ -25,15 +31,17 @@ defmodule Freddie.Session do
     Process.send(pid, {:socket_ready, socket}, [:noconnect])
   end
 
-  def send(context, msg) do
-    case Freddie.Scheme.Common.new_message(msg) do
+  def send(context, msg, opts \\ []) do
+    session = Context.get_session(context)
+
+    opts = [is_established_encryption: session.is_established_encryption] ++ opts
+
+    case Freddie.Scheme.Common.new_message(msg, session.secret_key, opts) do
       {:error, reason} ->
         Logger.error("Failed to send, reason: #{reason}")
         {:error, reason}
 
       data ->
-        session = Context.get_session(context)
-
         case internal_send(session.socket, data) do
           :port_is_busy ->
             case :ets.lookup(:user_sessions, session.socket) do

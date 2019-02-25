@@ -4,9 +4,10 @@ defmodule FreddieTest.Handler do
   require Logger
 
   alias FreddieTest.Scheme
+  import FreddieTest.Packets.Types
 
-  handler Scheme.Echo do
-    echo = Scheme.Echo.new(msg: msg.msg)
+  handler CS_Echo do
+    echo = Scheme.SC_Echo.new(msg: msg.msg)
     Freddie.Session.send(context, echo)
   end
 

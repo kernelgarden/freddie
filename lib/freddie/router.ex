@@ -37,14 +37,29 @@ defmodule Freddie.Router do
             protocol: Macro.escape(protocol, unquote: true),
             body: Macro.escape(body, unquote: true)
           ] do
+      packet_types_mod =
+        Application.get_env(
+          :freddie,
+          :packet_type_mod
+        )
+
+      protocol =
+        quote do
+          unquote(packet_types_mod).unquote(protocol).value()
+        end
+
       protocol_seq =
         quote do
-          get_scheme_seq(unquote(protocol))
+          elem(unquote(protocol), 0)
+        end
+
+      protocol_scheme =
+        quote do
+          elem(unquote(protocol), 1)
         end
 
       defp internal_dispatch(protocol_seq, var!(meta), payload, var!(context)) do
-        protocol_mod = unquote(protocol)
-        var!(msg) = protocol_mod.decode(payload)
+        var!(msg) = unquote(protocol_scheme).decode(payload)
         unquote(body[:do])
       end
     end
@@ -98,18 +113,28 @@ defmodule Freddie.Router do
 
   defp root_mod_term(), do: :"#{@root_module}"
 
-  defp load_packet_handler_mod() do
-    packet_handler_mod =
+  defp load_packet_types() do
+    packet_types =
+      Application.get_env(
+        :freddie,
+        :packet_type_mod
+      )
+
+    packet_types
+  end
+
+  defp load_packet_scheme_mod() do
+    packet_scheme_mod =
       Application.get_env(
         :freddie,
         :scheme_root_mod
       )
 
-    packet_handler_mod
+    packet_scheme_mod
   end
 
   def load_scheme_table() do
-    case load_packet_handler_mod() do
+    case load_packet_scheme_mod() do
       nil ->
         Logger.warn("packet_handler_mod doesn't registered")
         :abort
@@ -135,7 +160,7 @@ defmodule Freddie.Router do
   end
 
   defp compile_scheme_table() do
-    case load_packet_handler_mod() do
+    case load_packet_scheme_mod() do
       nil ->
         Logger.warn("packet_handler_mod doesn't registered")
 

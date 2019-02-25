@@ -28,7 +28,7 @@ defmodule Freddie.Session.PacketHandler do
         session = Freddie.Context.get_session(context)
 
         session.packet_handler_mod.dispatch(
-          Freddie.Scheme.Common.decode_message(cur_data),
+          Freddie.Scheme.Common.decode_message(cur_data, session.secret_key),
           context
         )
 

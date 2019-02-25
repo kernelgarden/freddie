@@ -4,5 +4,5 @@ package common;
 //import "big_integer.proto";
 
 message ConnectionInfoReply {
-    BigInteger client_pub_key = 1;
+    bytes client_pub_key = 1;
 }

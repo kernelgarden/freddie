@@ -6,8 +6,8 @@ package common;
 message ConnectionInfo {
     message KeyExchangeInfo {
         int32 generator = 1;
-        BigInteger prime = 2;
-        BigInteger pub_key = 3;
+        bytes prime = 2;
+        bytes pub_key = 3;
     }
 
     KeyExchangeInfo key_info = 1;

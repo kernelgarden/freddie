@@ -10,7 +10,7 @@ defmodule Freddie.Scheme.Common do
 
   @max_packet_size 65535
 
-  def new_message(command, payload, aes_key, opts) do
+  def new_message(payload, aes_key, opts) do
     use_encryption =
       Keyword.get(opts, :use_encryption, false) and
         Keyword.get(opts, :is_established_encryption, false)
@@ -18,7 +18,10 @@ defmodule Freddie.Scheme.Common do
     # Todo: genderate id automatic
     cur_timestamp = DateTime.to_unix(DateTime.utc_now())
     protocol_mod = payload.__struct__
+    IO.puts("[Debug] protocol_mod: #{protocol_mod}")
     command = Freddie.Router.lookup(protocol_mod)
+
+    IO.puts("[Debug] new_message => protocol_mod: #{protocol_mod}, command: #{command}")
 
     meta =
       Message.Meta.new(

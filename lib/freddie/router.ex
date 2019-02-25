@@ -37,29 +37,13 @@ defmodule Freddie.Router do
             protocol: Macro.escape(protocol, unquote: true),
             body: Macro.escape(body, unquote: true)
           ] do
-      packet_types_mod =
-        Application.get_env(
-          :freddie,
-          :packet_type_mod
-        )
 
-      protocol =
-        quote do
-          unquote(packet_types_mod).unquote(protocol).value()
-        end
-
-      protocol_seq =
-        quote do
-          elem(unquote(protocol), 0)
-        end
-
-      protocol_scheme =
-        quote do
-          elem(unquote(protocol), 1)
-        end
+      protocol_seq = quote do
+        get_scheme_seq(unquote(protocol))
+      end
 
       defp internal_dispatch(protocol_seq, var!(meta), payload, var!(context)) do
-        var!(msg) = unquote(protocol_scheme).decode(payload)
+        var!(msg) = unquote(protocol).decode(payload)
         unquote(body[:do])
       end
     end
@@ -117,7 +101,8 @@ defmodule Freddie.Router do
     packet_types =
       Application.get_env(
         :freddie,
-        :packet_type_mod
+        :packet_type_mod,
+        nil
       )
 
     packet_types
@@ -127,25 +112,35 @@ defmodule Freddie.Router do
     packet_scheme_mod =
       Application.get_env(
         :freddie,
-        :scheme_root_mod
+        :scheme_root_mod,
+        nil
       )
 
     packet_scheme_mod
   end
 
+  defp load_mods() do
+    {load_packet_scheme_mod(), load_packet_types()}
+  end
+
   def load_scheme_table() do
-    case load_packet_scheme_mod() do
-      nil ->
+    mods = {packet_scheme_mod, packet_types_mod} = load_mods()
+    Logger.info("[DEBUG] => load_scheme_table")
+
+    case (packet_scheme_mod == nil) or (packet_types_mod == nil) do
+      true ->
         Logger.warn("packet_handler_mod doesn't registered")
         :abort
 
-      mod ->
-        case function_exported?(mod, :defs, 0) do
+      false ->
+        #case function_exported?(packet_scheme_mod, :defs, 0) and function_exported?(Freddie.Scheme.Common, :defs, 0) do
+        #case function_exported?(packet_types_mod, :enums, 0) do
+        case true do
           # Not need to compile
           true ->
-            Logger.info("packet_handler_mod: #{mod}")
+            Logger.info("packet_handler_mod: #{inspect mods}")
 
-            mod
+            mods
             |> make_schemes()
             |> generate_scheme_table()
 
@@ -154,69 +149,58 @@ defmodule Freddie.Router do
           # To compile first! Not defined protocols
           false ->
             # pass now
+            Logger.info("Booooom")
             :ok
         end
     end
   end
 
   defp compile_scheme_table() do
-    case load_packet_scheme_mod() do
-      nil ->
+    mods = {packet_scheme_mod, packet_types_mod} = load_mods()
+
+    case (packet_scheme_mod == nil) or (packet_types_mod == nil) do
+      true ->
         Logger.warn("packet_handler_mod doesn't registered")
 
-      mod ->
-        Logger.info("packet_handler_mod: #{mod}")
+      false ->
+        Logger.info("packet_handler_mod: #{inspect mods}")
 
-        mod
+        mods
         |> make_schemes()
         |> generate_scheme_table()
     end
   end
 
-  defp make_schemes(packet_handler_mod) do
-    custom_handler_schemes =
-      packet_handler_mod.defs()
-      |> Enum.with_index()
-      # |> IO.inspect(label: "[DEBUG] => ")
-      |> Enum.map(fn {def, idx} ->
-        {{:msg, protocol_mod}, _} = def
+  defp make_schemes({packet_scheme_mod, packet_types_mod}) do
+    prefix_length = length(Module.split(packet_types_mod))
 
-        {protocol_mod, idx}
-      end)
+    custom_types = packet_types_mod.enums()
+    custom_schemes =
+      custom_types
+      |> Enum.map(fn type ->
+          scheme =
+            Module.split(type)
+            |> Enum.drop(prefix_length)
+            |> Module.concat()
+          seq = packet_types_mod.value(type)
+          {scheme, seq}
+        end)
 
-    default_handler_schemes =
-      Freddie.Scheme.Common.defs()
-      |> Enum.with_index()
-      # |> IO.inspect(label: "[DEBUG] => ")
-      |> Enum.map(fn {def, idx} ->
-        {{:msg, protocol_mod}, _} = def
+    internal_types = Freddie.InternalPackets.Types.enums()
+    internal_schemes =
+      internal_types
+      |> Enum.map(fn type ->
+          scheme =
+            Module.split(type)
+            |> Enum.drop(3)
+            |> Module.concat()
+          seq = Freddie.InternalPackets.Types.value(type)
+          {scheme, seq}
+        end)
 
-        # Specify to avoid module here!
-        case protocol_mod do
-          Freddie.Scheme.Common.BigInteger ->
-            nil
+    # IO.puts("[DEBUG] make_schemes => #{inspect internal_schemes}")
 
-          Freddie.Scheme.Common.Message ->
-            nil
-
-          Freddie.Scheme.Common.Message.Meta ->
-            nil
-
-          other ->
-            {protocol_mod, -idx}
-        end
-      end)
-      |> Enum.reduce([], fn elem, acc ->
-        case elem do
-          nil ->
-            acc
-
-          other ->
-            [elem | acc]
-        end
-      end)
-
-    default_handler_schemes ++ custom_handler_schemes
+    internal_schemes ++ custom_schemes
   end
 
   defp generate_scheme_table(schemes) do

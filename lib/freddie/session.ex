@@ -56,7 +56,7 @@ defmodule Freddie.Session do
 
     opts = [is_established_encryption: session.is_established_encryption] ++ opts
 
-    case Freddie.Scheme.Common.new_message(0, msg, session.secret_key, opts) do
+    case Freddie.Scheme.Common.new_message(msg, session.secret_key, opts) do
       {:error, reason} ->
         Logger.error("Failed to send, reason: #{reason}")
         {:error, reason}
@@ -169,7 +169,7 @@ defmodule Freddie.Session do
     connection_info = Freddie.Scheme.Common.ConnectionInfo.new(
       key_info: key_exchange_info
     )
-    #Session.send(new_context, connection_info)
+    Session.send(new_context, connection_info)
 
     {:noreply, new_context}
   end

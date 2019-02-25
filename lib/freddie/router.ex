@@ -42,9 +42,19 @@ defmodule Freddie.Router do
         get_scheme_seq(unquote(protocol))
       end
 
-      defp internal_dispatch(protocol_seq, var!(meta), payload, var!(context)) do
+      defp internal_dispatch(protocol_seq, var!(meta), payload, var!(context)) when protocol_seq > 0 do
         var!(msg) = unquote(protocol).decode(payload)
         unquote(body[:do])
+      end
+
+      # Freddie.Scheme.Common.ConnectionInfoReply
+      defp internal_dispatch(-2, _meta, payload, context) do
+        connection_info = Freddie.Scheme.Common.ConnectionInfoReply.decode(payload)
+        Freddie.Session.set_encryption(context, Freddie.Utils.Binary.from_big_integer(connection_info.client_pub_key))
+      end
+
+      defp internal_dispatch(unknown_seq, _, _, _) do
+        Logger.warn("received unkown protocol #{unknown_seq}")
       end
     end
   end
@@ -69,10 +79,6 @@ defmodule Freddie.Router do
     end
   end
 
-  defp internal_dispatch(unknown_seq, _, _, _) do
-    Logger.warn("received unkown protocol #{unknown_seq}")
-  end
-
   def lookup(scheme) do
     root_mod = root_mod_term()
     apply(root_mod, Freddie.Router.Builder.key_to_term(scheme), [])
@@ -83,15 +89,6 @@ defmodule Freddie.Router do
       @before_compile unquote(__MODULE__)
 
       @after_compile unquote(__MODULE__)
-    end
-  end
-
-  defmacro make_internal_handler(internal_schemes) do
-    quote bind_quoted: [
-            internal_schemes: Macro.escape(internal_schemes, unquote: true)
-          ] do
-      defp internal_dispatch() do
-      end
     end
   end
 
@@ -133,9 +130,7 @@ defmodule Freddie.Router do
         :abort
 
       false ->
-        #case function_exported?(packet_scheme_mod, :defs, 0) and function_exported?(Freddie.Scheme.Common, :defs, 0) do
-        #case function_exported?(packet_types_mod, :enums, 0) do
-        case true do
+        case Code.ensure_compiled?(Freddie.InternalPackets.Types) and Code.ensure_compiled?(packet_types_mod) do
           # Not need to compile
           true ->
             Logger.info("packet_handler_mod: #{inspect mods}")
@@ -148,9 +143,9 @@ defmodule Freddie.Router do
 
           # To compile first! Not defined protocols
           false ->
-            # pass now
-            Logger.info("Booooom")
-            :ok
+            Logger.info("Cannot load packet types! Retry...")
+
+            :abort
         end
     end
   end

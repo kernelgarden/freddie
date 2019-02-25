@@ -18,10 +18,7 @@ defmodule Freddie.Scheme.Common do
     # Todo: genderate id automatic
     cur_timestamp = DateTime.to_unix(DateTime.utc_now())
     protocol_mod = payload.__struct__
-    IO.puts("[Debug] protocol_mod: #{protocol_mod}")
     command = Freddie.Router.lookup(protocol_mod)
-
-    IO.puts("[Debug] new_message => protocol_mod: #{protocol_mod}, command: #{command}")
 
     meta =
       Message.Meta.new(

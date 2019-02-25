@@ -27,7 +27,7 @@ defmodule Freddie.Session do
             # encryption
             is_established_encryption: false,
             server_private_key: 0,
-            secret_key: 0
+            secret_key: <<>>
 
   def start_link() do
     GenServer.start_link(__MODULE__, nil)

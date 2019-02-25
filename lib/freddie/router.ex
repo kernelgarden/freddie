@@ -32,7 +32,7 @@ defmodule Freddie.Router do
   defmacro __after_compile__(_env, _byte_code) do
   end
 
-  defmacro handler(protocol, body) do
+  defmacro defhandler(protocol, body) do
     quote bind_quoted: [
             protocol: Macro.escape(protocol, unquote: true),
             body: Macro.escape(body, unquote: true)

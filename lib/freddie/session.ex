@@ -5,6 +5,10 @@ defmodule Freddie.Session do
 
   alias __MODULE__
   alias Freddie.Context
+  alias Freddie.Utils
+  alias Freddie.Security.DiffieHellman
+  alias Freddie.Security.Aes
+  alias Freddie.Scheme.Common.ConnectionInfo
 
   @resend_queue_flush_time 16
   @max_resend_round 5
@@ -13,6 +17,7 @@ defmodule Freddie.Session do
             addr: nil,
             buffer: <<>>,
             packet_handler_mod: nil,
+            packet_types_mod: nil,
 
             # send queue
             send_queue: <<>>,
@@ -21,6 +26,7 @@ defmodule Freddie.Session do
 
             # encryption
             is_established_encryption: false,
+            server_private_key: 0,
             secret_key: 0
 
   def start_link() do
@@ -31,12 +37,26 @@ defmodule Freddie.Session do
     Process.send(pid, {:socket_ready, socket}, [:noconnect])
   end
 
+  def set_encryption(context, client_public_key) do
+    session = Context.get_session(context)
+    case :ets.lookup(:user_sessions, session.socket) do
+      [{_, pid} | _] ->
+        Process.send(pid, {:establish_encryption, client_public_key}, [:noconnect])
+
+      [] ->
+        {:error, {:set_encryption, :unknown_socket}}
+
+      other ->
+        other
+    end
+  end
+
   def send(context, msg, opts \\ []) do
     session = Context.get_session(context)
 
     opts = [is_established_encryption: session.is_established_encryption] ++ opts
 
-    case Freddie.Scheme.Common.new_message(msg, session.secret_key, opts) do
+    case Freddie.Scheme.Common.new_message(0, msg, session.secret_key, opts) do
       {:error, reason} ->
         Logger.error("Failed to send, reason: #{reason}")
         {:error, reason}
@@ -96,9 +116,16 @@ defmodule Freddie.Session do
         :packet_handler_mod
       )
 
+    packet_types_mod =
+      Application.get_env(
+        :freddie,
+        :packet_type_mod
+      )
+
     session = %Session{
       buffer: <<>>,
       packet_handler_mod: packet_handler_mod,
+      packet_types_mod: packet_types_mod,
       send_queue: <<>>,
       cur_resend_round: 1
     }
@@ -131,6 +158,18 @@ defmodule Freddie.Session do
     )
 
     # hand shake
+    server_private_key = DiffieHellman.generate_private_key()
+    server_public_key = DiffieHellman.generate_public_key(server_private_key)
+    new_context = Context.update_session(new_context, server_private_key: server_private_key)
+    key_exchange_info = ConnectionInfo.KeyExchangeInfo.new(
+      generator: DiffieHellman.get_generator(),
+      prime: Utils.Binary.to_big_integer(DiffieHellman.get_prime()),
+      pub_key: Utils.Binary.to_big_integer(server_public_key)
+    )
+    connection_info = Freddie.Scheme.Common.ConnectionInfo.new(
+      key_info: key_exchange_info
+    )
+    #Session.send(new_context, connection_info)
 
     {:noreply, new_context}
   end
@@ -196,6 +235,15 @@ defmodule Freddie.Session do
         is_send_queue_dirty: true
       )
 
+    {:noreply, new_context}
+  end
+
+  @impl true
+  def handle_info({:establish_encryption, client_public_key}, context) do
+    session = Context.get_session(context)
+    secret_key = DiffieHellman.generate_secret_key(client_public_key, session.server_private_key)
+    aes_key = Aes.generate_aes_key(secret_key)
+    new_context = Context.update_session(context, secret_key: aes_key)
     {:noreply, new_context}
   end
 

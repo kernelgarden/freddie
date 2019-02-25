@@ -18,4 +18,12 @@ defmodule Freddie.Security.DiffieHellman do
   def generate_private_key() do
     :binary.decode_unsigned(:crypto.strong_rand_bytes(@private_key_size))
   end
+
+  def get_generator() do
+    @base_number
+  end
+
+  def get_prime() do
+    @oakley_group_2
+  end
 end

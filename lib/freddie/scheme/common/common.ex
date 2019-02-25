@@ -10,7 +10,7 @@ defmodule Freddie.Scheme.Common do
 
   @max_packet_size 65535
 
-  def new_message(payload, aes_key, opts) do
+  def new_message(command, payload, aes_key, opts) do
     use_encryption =
       Keyword.get(opts, :use_encryption, false) and
         Keyword.get(opts, :is_established_encryption, false)

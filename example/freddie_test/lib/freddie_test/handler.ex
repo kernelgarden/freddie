@@ -6,7 +6,7 @@ defmodule FreddieTest.Handler do
   alias FreddieTest.Scheme
   import FreddieTest.Packets.Types
 
-  handler CS_Echo do
+  defhandler CS_Echo do
     echo = Scheme.SC_Echo.new(msg: msg.msg)
     Freddie.Session.send(context, echo)
   end

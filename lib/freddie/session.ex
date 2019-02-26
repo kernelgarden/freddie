@@ -245,7 +245,10 @@ defmodule Freddie.Session do
     session = Context.get_session(context)
     secret_key = DiffieHellman.generate_secret_key(client_public_key, session.server_private_key)
     aes_key = Aes.generate_aes_key(secret_key)
-    new_context = Context.update_session(context, secret_key: aes_key)
+
+    new_context =
+      Context.update_session(context, secret_key: aes_key, is_established_encryption: true)
+
     {:noreply, new_context}
   end
 

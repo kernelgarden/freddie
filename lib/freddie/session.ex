@@ -39,6 +39,7 @@ defmodule Freddie.Session do
 
   def set_encryption(context, client_public_key) do
     session = Context.get_session(context)
+
     case :ets.lookup(:user_sessions, session.socket) do
       [{_, pid} | _] ->
         Process.send(pid, {:establish_encryption, client_public_key}, [:noconnect])
@@ -161,14 +162,15 @@ defmodule Freddie.Session do
     server_private_key = DiffieHellman.generate_private_key()
     server_public_key = DiffieHellman.generate_public_key(server_private_key)
     new_context = Context.update_session(new_context, server_private_key: server_private_key)
-    key_exchange_info = ConnectionInfo.KeyExchangeInfo.new(
-      generator: DiffieHellman.get_generator(),
-      prime: Utils.Binary.to_big_integer(DiffieHellman.get_prime()),
-      pub_key: Utils.Binary.to_big_integer(server_public_key)
-    )
-    connection_info = Freddie.Scheme.Common.ConnectionInfo.new(
-      key_info: key_exchange_info
-    )
+
+    key_exchange_info =
+      ConnectionInfo.KeyExchangeInfo.new(
+        generator: DiffieHellman.get_generator(),
+        prime: Utils.Binary.to_big_integer(DiffieHellman.get_prime()),
+        pub_key: Utils.Binary.to_big_integer(server_public_key)
+      )
+
+    connection_info = Freddie.Scheme.Common.ConnectionInfo.new(key_info: key_exchange_info)
     Session.send(new_context, connection_info)
 
     {:noreply, new_context}

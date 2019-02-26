@@ -11,10 +11,13 @@ defmodule FreddieTest.Handler do
   end
 
   connect do
-    Logger.info("Client #{inspect context} is connected!")
+    Logger.info("Client #{inspect(context)} is connected!")
   end
 
   disconnect do
-    Logger.info("Client #{inspect context} is disconnected!")
+    Logger.info("Client #{inspect(context)} is disconnected!")
+  end
+
+  default do
   end
 end

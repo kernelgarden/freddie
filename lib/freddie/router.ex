@@ -8,6 +8,7 @@ defmodule Freddie.Router do
   defmacro __using__(_opts) do
     quote do
       import Freddie.Router
+      require Logger
 
       def dispatch({command, meta, payload}, context) do
         internal_dispatch(command, meta, payload, context)
@@ -19,6 +20,16 @@ defmodule Freddie.Router do
 
       def dispatch(:connect, context) do
         internal_dispatch(:connect, context)
+      end
+
+      # Freddie.Scheme.Common.ConnectionInfoReply
+      defp internal_dispatch(-2, _meta, payload, context) do
+        connection_info = Freddie.Scheme.Common.ConnectionInfoReply.decode(payload)
+
+        Freddie.Session.set_encryption(
+          context,
+          Freddie.Utils.Binary.from_big_integer(connection_info.client_pub_key)
+        )
       end
 
       unquote(prelude())
@@ -37,24 +48,26 @@ defmodule Freddie.Router do
             protocol: Macro.escape(protocol, unquote: true),
             body: Macro.escape(body, unquote: true)
           ] do
+      protocol_seq =
+        quote do
+          get_scheme_seq(unquote(protocol))
+        end
 
-      protocol_seq = quote do
-        get_scheme_seq(unquote(protocol))
-      end
-
-      defp internal_dispatch(protocol_seq, var!(meta), payload, var!(context)) when protocol_seq > 0 do
+      defp internal_dispatch(protocol_seq, var!(meta), payload, var!(context))
+           when protocol_seq > 0 do
         var!(msg) = unquote(protocol).decode(payload)
         unquote(body[:do])
       end
+    end
+  end
 
-      # Freddie.Scheme.Common.ConnectionInfoReply
-      defp internal_dispatch(-2, _meta, payload, context) do
-        connection_info = Freddie.Scheme.Common.ConnectionInfoReply.decode(payload)
-        Freddie.Session.set_encryption(context, Freddie.Utils.Binary.from_big_integer(connection_info.client_pub_key))
-      end
-
+  defmacro default(body) do
+    quote bind_quoted: [
+            body: Macro.escape(body, unquote: true)
+          ] do
       defp internal_dispatch(unknown_seq, _, _, _) do
         Logger.warn("received unkown protocol #{unknown_seq}")
+        unquote(body[:do])
       end
     end
   end
@@ -124,16 +137,17 @@ defmodule Freddie.Router do
     mods = {packet_scheme_mod, packet_types_mod} = load_mods()
     Logger.info("[DEBUG] => load_scheme_table")
 
-    case (packet_scheme_mod == nil) or (packet_types_mod == nil) do
+    case packet_scheme_mod == nil or packet_types_mod == nil do
       true ->
         Logger.warn("packet_handler_mod doesn't registered")
         :abort
 
       false ->
-        case Code.ensure_compiled?(Freddie.InternalPackets.Types) and Code.ensure_compiled?(packet_types_mod) do
+        case Code.ensure_compiled?(Freddie.InternalPackets.Types) and
+               Code.ensure_compiled?(packet_types_mod) do
           # Not need to compile
           true ->
-            Logger.info("packet_handler_mod: #{inspect mods}")
+            Logger.info("packet_handler_mod: #{inspect(mods)}")
 
             mods
             |> make_schemes()
@@ -153,12 +167,12 @@ defmodule Freddie.Router do
   defp compile_scheme_table() do
     mods = {packet_scheme_mod, packet_types_mod} = load_mods()
 
-    case (packet_scheme_mod == nil) or (packet_types_mod == nil) do
+    case packet_scheme_mod == nil or packet_types_mod == nil do
       true ->
         Logger.warn("packet_handler_mod doesn't registered")
 
       false ->
-        Logger.info("packet_handler_mod: #{inspect mods}")
+        Logger.info("packet_handler_mod: #{inspect(mods)}")
 
         mods
         |> make_schemes()
@@ -170,28 +184,32 @@ defmodule Freddie.Router do
     prefix_length = length(Module.split(packet_types_mod))
 
     custom_types = packet_types_mod.enums()
+
     custom_schemes =
       custom_types
       |> Enum.map(fn type ->
-          scheme =
-            Module.split(type)
-            |> Enum.drop(prefix_length)
-            |> Module.concat()
-          seq = packet_types_mod.value(type)
-          {scheme, seq}
-        end)
+        scheme =
+          Module.split(type)
+          |> Enum.drop(prefix_length)
+          |> Module.concat()
+
+        seq = packet_types_mod.value(type)
+        {scheme, seq}
+      end)
 
     internal_types = Freddie.InternalPackets.Types.enums()
+
     internal_schemes =
       internal_types
       |> Enum.map(fn type ->
-          scheme =
-            Module.split(type)
-            |> Enum.drop(3)
-            |> Module.concat()
-          seq = Freddie.InternalPackets.Types.value(type)
-          {scheme, seq}
-        end)
+        scheme =
+          Module.split(type)
+          |> Enum.drop(3)
+          |> Module.concat()
+
+        seq = Freddie.InternalPackets.Types.value(type)
+        {scheme, seq}
+      end)
 
     # IO.puts("[DEBUG] make_schemes => #{inspect internal_schemes}")
 

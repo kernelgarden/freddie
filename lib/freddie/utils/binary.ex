@@ -1,5 +1,4 @@
 defmodule Freddie.Utils.Binary do
-
   def to_big_integer(integer) when is_integer(integer) do
     :binary.encode_unsigned(integer)
   end

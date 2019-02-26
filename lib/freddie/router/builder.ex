@@ -5,9 +5,9 @@ defmodule Freddie.Router.Builder do
     {:ok, ^module, binary} =
       module
       |> build_abstract(schemes)
-      # |> IO.inspect(label: "[DEBUG] => ")
+       |> IO.inspect(label: "[DEBUG] => ")
       |> Enum.map(&:erl_syntax.revert/1)
-      # |> IO.inspect(label: "[DEBUG] => ")
+       |> IO.inspect(label: "[DEBUG] => ")
       |> :compile.forms([:verbose, :report_errors])
 
     binary

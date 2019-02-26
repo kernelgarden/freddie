@@ -6,8 +6,21 @@ defmodule FreddieTest.Handler do
   alias FreddieTest.Scheme
 
   defhandler Scheme.CS_Echo do
+    IO.puts("FFFFFFF")
     echo = Scheme.SC_Echo.new(msg: msg.msg)
     Freddie.Session.send(context, echo)
+  end
+
+  defhandler Scheme.CS_EncryptPing do
+    IO.puts("BOooooo")
+    case meta.use_encryption do
+      true ->
+        IO.puts("Received encrypt ping from client. msg: #{inspect msg.msg} - #{msg.idx}")
+      false ->
+        IO.puts("Received ping from client. msg: #{inspect msg.msg} - #{msg.idx}")
+    end
+    pong = Scheme.SC_EncryptPong.new(msg: "Pong!", idx: msg.idx + 1)
+    Freddie.Session.send(context, pong, use_encryption: true)
   end
 
   connect do
@@ -18,6 +31,4 @@ defmodule FreddieTest.Handler do
     Logger.info("Client #{inspect(context)} is disconnected!")
   end
 
-  default do
-  end
 end

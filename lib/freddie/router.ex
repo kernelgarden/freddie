@@ -53,11 +53,15 @@ defmodule Freddie.Router do
           get_scheme_seq(unquote(protocol))
         end
 
+      IO.puts("[EEEEEE] => #{inspect protocol_seq}, #{inspect protocol}")
+
       defp internal_dispatch(protocol_seq, var!(meta), payload, var!(context))
-           when protocol_seq > 0 do
+        when protocol_seq > 0 do
+        IO.puts("[GGGGGG] => #{inspect protocol_seq}, #{inspect payload}")
         var!(msg) = unquote(protocol).decode(payload)
         unquote(body[:do])
       end
+      |> IO.inspect(label: "[Fucking Result] =>")
     end
   end
 
@@ -224,8 +228,8 @@ defmodule Freddie.Router do
     :ok
   end
 
-  # Use only in macro!
-  defp get_scheme_seq(scheme) do
+  def get_scheme_seq(scheme) do
+    IO.puts("<<<<<<<<<<<<<<<<<<<<called!! #{inspect scheme}")
     root_mod = root_mod_term()
     func_name = Freddie.Router.Builder.key_to_term(scheme)
     root_mod.func_name

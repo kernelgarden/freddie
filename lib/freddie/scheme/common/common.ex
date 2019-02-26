@@ -48,14 +48,28 @@ defmodule Freddie.Scheme.Common do
     end
   end
 
-  # for dummy test...
-  # DO NOT USE THIS FUNCTION
-  def new_message_dummy(command, payload) do
+  @doc """
+  for dummy test...
+  DO NOT USE THIS FUNCTION
+  """
+  def new_message_dummy(command, payload, aes_key, opts) do
+    use_encryption = Keyword.get(opts, :use_encryption, false)
+
     cur_timestamp = DateTime.to_unix(DateTime.utc_now())
     protocol_mod = payload.__struct__
 
-    meta = Message.Meta.new(id: 0, command: command, timestamp: cur_timestamp)
-    msg = Message.new(meta: meta, payload: protocol_mod.encode(payload))
+    meta = Message.Meta.new(id: 0, command: command, timestamp: cur_timestamp, use_encryption: use_encryption)
+
+    encoded_payload =
+      case use_encryption do
+        false ->
+          protocol_mod.encode(payload)
+
+        true ->
+          Security.Aes.encrypt(aes_key, protocol_mod.encode(payload))
+      end
+
+    msg = Message.new(meta: meta, payload: encoded_payload)
     encoded = Message.encode(msg)
 
     size = byte_size(encoded)
@@ -78,6 +92,8 @@ defmodule Freddie.Scheme.Common do
         true ->
           Security.Aes.decrypt(aes_key, message.payload)
       end
+
+    IO.puts("[Debug] decode_message: #{inspect message.meta.command}, #{inspect message.meta}, #{inspect payload}")
 
     {message.meta.command, message.meta, payload}
   end

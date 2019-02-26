@@ -188,7 +188,9 @@ defmodule Freddie.Session do
     new_context =
       Context.set_session(context, %Session{session | buffer: <<buffer::binary, data::binary>>})
 
+    IO.puts("[Debug] Before read: #{inspect(new_context, limit: :infinity)}")
     new_context = Session.PacketHandler.onRead(new_context)
+    IO.puts("[Debug] After read: #{inspect(new_context, limit: :infinity)}")
 
     {:noreply, new_context}
   end

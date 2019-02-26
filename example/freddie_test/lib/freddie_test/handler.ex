@@ -5,14 +5,12 @@ defmodule FreddieTest.Handler do
 
   alias FreddieTest.Scheme
 
-  defhandler Scheme.CS_Echo do
-    IO.puts("FFFFFFF")
+  defhandler FreddieTest.Scheme.CS_Echo do
     echo = Scheme.SC_Echo.new(msg: msg.msg)
     Freddie.Session.send(context, echo)
   end
 
-  defhandler Scheme.CS_EncryptPing do
-    IO.puts("BOooooo")
+  defhandler FreddieTest.Scheme.CS_EncryptPing do
     case meta.use_encryption do
       true ->
         IO.puts("Received encrypt ping from client. msg: #{inspect msg.msg} - #{msg.idx}")

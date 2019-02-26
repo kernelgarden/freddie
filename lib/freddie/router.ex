@@ -44,24 +44,13 @@ defmodule Freddie.Router do
   end
 
   defmacro defhandler(protocol, body) do
-    quote bind_quoted: [
-            protocol: Macro.escape(protocol, unquote: true),
-            body: Macro.escape(body, unquote: true)
-          ] do
-      protocol_seq =
-        quote do
-          get_scheme_seq(unquote(protocol))
-        end
+    protocol_seq = get_scheme_seq(protocol)
 
-      IO.puts("[EEEEEE] => #{inspect protocol_seq}, #{inspect protocol}")
-
-      defp internal_dispatch(protocol_seq, var!(meta), payload, var!(context))
-        when protocol_seq > 0 do
-        IO.puts("[GGGGGG] => #{inspect protocol_seq}, #{inspect payload}")
+    quote do
+      defp internal_dispatch(unquote(protocol_seq), var!(meta), payload, var!(context)) do
         var!(msg) = unquote(protocol).decode(payload)
         unquote(body[:do])
       end
-      |> IO.inspect(label: "[Fucking Result] =>")
     end
   end
 
@@ -229,9 +218,11 @@ defmodule Freddie.Router do
   end
 
   def get_scheme_seq(scheme) do
-    IO.puts("<<<<<<<<<<<<<<<<<<<<called!! #{inspect scheme}")
+    {_, _, terms} = scheme
+    mod = Module.concat(terms)
+    # IO.puts("<<<<<<<<<<<<<<<<<<<<called!! #{inspect scheme}, #{inspect mod}")
     root_mod = root_mod_term()
-    func_name = Freddie.Router.Builder.key_to_term(scheme)
-    root_mod.func_name
+    func_name = Freddie.Router.Builder.key_to_term(mod)
+    apply(root_mod, func_name, [])
   end
 end

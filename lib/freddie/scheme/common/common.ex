@@ -58,7 +58,13 @@ defmodule Freddie.Scheme.Common do
     cur_timestamp = DateTime.to_unix(DateTime.utc_now())
     protocol_mod = payload.__struct__
 
-    meta = Message.Meta.new(id: 0, command: command, timestamp: cur_timestamp, use_encryption: use_encryption)
+    meta =
+      Message.Meta.new(
+        id: 0,
+        command: command,
+        timestamp: cur_timestamp,
+        use_encryption: use_encryption
+      )
 
     encoded_payload =
       case use_encryption do
@@ -92,8 +98,6 @@ defmodule Freddie.Scheme.Common do
         true ->
           Security.Aes.decrypt(aes_key, message.payload)
       end
-
-    IO.puts("[Debug] decode_message: #{inspect message.meta.command}, #{inspect message.meta}, #{inspect payload}")
 
     {message.meta.command, message.meta, payload}
   end

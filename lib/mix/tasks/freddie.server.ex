@@ -23,7 +23,7 @@ defmodule Mix.Tasks.Freddie.Server do
   end
 
   def renew do
-    Mix.Freddie.watched_modules
+    Mix.Freddie.watched_modules()
     |> modules_to_file_path()
     |> Stream.map(&renew_if_exists(&1))
     |> Stream.filter(&(&1 == :ok))
@@ -43,6 +43,6 @@ defmodule Mix.Tasks.Freddie.Server do
   end
 
   defp iex_running? do
-    Code.ensure_loaded?(IEx) and IEx.started?
+    Code.ensure_loaded?(IEx) and IEx.started?()
   end
 end

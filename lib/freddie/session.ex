@@ -69,15 +69,12 @@ defmodule Freddie.Session do
   def set_encryption(context, client_public_key) do
     session = Context.get_session(context)
 
-    case :ets.lookup(@user_session_table, session.socket) do
-      [{_, pid} | _] ->
+    case lookup_pid(context) do
+      {:ok, pid} ->
         GenServer.cast(pid, {:establish_encryption, client_public_key})
 
-      [] ->
-        {:error, {:set_encryption, :unknown_socket}}
-
       other ->
-        other
+        {:error, {:set_encryption, other}}
     end
   end
 
@@ -94,15 +91,12 @@ defmodule Freddie.Session do
       data ->
         case internal_send(session.socket, data) do
           :port_is_busy ->
-            case :ets.lookup(@user_session_table, session.socket) do
-              [{_, pid} | _] ->
+            case lookup_pid(context) do
+              {:ok, pid} ->
                 GenServer.cast(pid, {:resend, data})
 
-              [] ->
-                {:error, {:send, :unknown_socket}}
-
               other ->
-                other
+                {:error, {:send, other}}
             end
 
           other ->

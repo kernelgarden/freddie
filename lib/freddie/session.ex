@@ -13,6 +13,8 @@ defmodule Freddie.Session do
   @resend_queue_flush_time 16
   @max_resend_round 5
 
+  @user_session_table :user_sessions
+
   defstruct socket: nil,
             addr: nil,
             buffer: <<>>,
@@ -37,10 +39,35 @@ defmodule Freddie.Session do
     Process.send(pid, {:socket_ready, socket}, [:noconnect])
   end
 
+  def user_session_table, do: @user_session_table
+
+  def lookup_pid(context) do
+    session = Context.get_session(context)
+    case :ets.lookup(@user_session_table, session.socket) do
+      [{_, pid} | _] ->
+        {:ok, pid}
+
+      [] ->
+        {:error, :unknown_socket}
+
+      other ->
+        {:error, other}
+    end
+  end
+
+  def update_context(new_context) do
+    case lookup_pid(new_context) do
+      {:ok, pid} ->
+        GenServer.cast(pid, {:update_context, new_context})
+      other ->
+        {:error, {:update_context, other}}
+    end
+  end
+
   def set_encryption(context, client_public_key) do
     session = Context.get_session(context)
 
-    case :ets.lookup(:user_sessions, session.socket) do
+    case :ets.lookup(@user_session_table, session.socket) do
       [{_, pid} | _] ->
         Process.send(pid, {:establish_encryption, client_public_key}, [:noconnect])
 
@@ -65,7 +92,7 @@ defmodule Freddie.Session do
       data ->
         case internal_send(session.socket, data) do
           :port_is_busy ->
-            case :ets.lookup(:user_sessions, session.socket) do
+            case :ets.lookup(@user_session_table, session.socket) do
               [{_, pid} | _] ->
                 GenServer.cast(pid, {:resend, data})
 
@@ -137,6 +164,24 @@ defmodule Freddie.Session do
   end
 
   @impl true
+  def handle_cast({:resend, data}, context) do
+    session = Context.get_session(context)
+
+    new_context =
+      Context.update_session(context,
+        send_queue: <<data::binary, session.send_queue::binary>>,
+        is_send_queue_dirty: true
+      )
+
+    {:noreply, new_context}
+  end
+
+  @impl true
+  def handle_cast({:update_context, new_context}, new_context) do
+    {:noreply, new_context}
+  end
+
+  @impl true
   def handle_info({:socket_ready, socket}, context) do
     Process.flag(:trap_exit, true)
 
@@ -146,7 +191,7 @@ defmodule Freddie.Session do
     new_context = Context.update_session(context, socket: socket, addr: addr_str)
     session = Context.get_session(new_context)
 
-    :ets.insert(:user_sessions, {socket, self()})
+    :ets.insert(@user_session_table, {socket, self()})
 
     Session.Helper.activate_socket(socket)
 
@@ -227,18 +272,6 @@ defmodule Freddie.Session do
     {:noreply, new_context}
   end
 
-  @impl true
-  def handle_cast({:resend, data}, context) do
-    session = Context.get_session(context)
-
-    new_context =
-      Context.update_session(context,
-        send_queue: <<data::binary, session.send_queue::binary>>,
-        is_send_queue_dirty: true
-      )
-
-    {:noreply, new_context}
-  end
 
   @impl true
   def handle_info({:establish_encryption, client_public_key}, context) do
@@ -306,7 +339,7 @@ defmodule Freddie.Session do
       session.socket
     )
 
-    :ets.delete(:user_sessions, session.socket)
+    :ets.delete(@user_session_table, session.socket)
     :ok
   end
 

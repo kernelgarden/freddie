@@ -89,8 +89,8 @@ defmodule Freddie.Session do
         {:error, reason}
 
       data ->
-        case internal_send(session.socket, data) do
-          :port_is_busy ->
+        #case internal_send(session.socket, data) do
+        #  :port_is_busy ->
             case lookup_pid(context) do
               {:ok, pid} ->
                 GenServer.cast(pid, {:resend, data})
@@ -99,9 +99,9 @@ defmodule Freddie.Session do
                 {:error, {:send, other}}
             end
 
-          other ->
-            other
-        end
+        #  other ->
+        #    other
+        #end
     end
   end
 

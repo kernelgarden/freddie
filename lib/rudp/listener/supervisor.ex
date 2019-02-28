@@ -16,7 +16,7 @@ defmodule Freddie.RUDP.Listener.Supervisor do
     :ets.new(:udp_listen_socket, [:set, :public, :named_table])
 
     children = [
-      {Freddie.RUDP.Listener, [port: port]},
+      {Freddie.RUDP.Listener, [port: port]}
     ]
 
     Supervisor.init(children, strategy: :one_for_all, max_restarts: 10, max_seconds: 10)

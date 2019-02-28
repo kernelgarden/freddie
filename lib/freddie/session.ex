@@ -205,7 +205,7 @@ defmodule Freddie.Session do
 
     new_context =
       Context.update_session(context,
-        send_queue: <<data::binary, session.send_queue::binary>>,
+        send_queue: <<session.send_queue::binary, data::binary>>,
         is_send_queue_dirty: true
       )
 

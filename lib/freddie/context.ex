@@ -10,15 +10,28 @@ defmodule Freddie.Context do
     %Context{session: session, __internal__: %{}}
   end
 
+  ################################################################################
+  ##
+  ## Context API
+  ##
+  ################################################################################
+
   @spec put(Freddie.Context.t(), any(), any()) :: Freddie.Context.t()
   def put(context, key, value) do
     %Context{context | __internal__: Map.put(context.__internal__, key, value)}
+    |> update_context()
   end
 
   @spec get(Freddie.Context.t(), any()) :: :error | {:ok, any()}
   def get(context, key) do
     Map.fetch(context.__internal__, key)
   end
+
+  ################################################################################
+  ##
+  ## Session API
+  ##
+  ################################################################################
 
   @spec get_session(Freddie.Context.t()) :: Freddie.Session.t()
   def get_session(context) do
@@ -45,5 +58,9 @@ defmodule Freddie.Context do
   @spec set_session(Freddie.Context.t(), Freddie.Session.t()) :: Freddie.Context.t()
   def set_session(context, new_session) do
     %Context{context | session: new_session}
+  end
+
+  defp update_context(new_context) do
+    Freddie.Session.update_context(new_context)
   end
 end

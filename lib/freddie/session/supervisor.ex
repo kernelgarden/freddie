@@ -25,7 +25,7 @@ defmodule Freddie.Session.Supervisor do
            }}
   def init(_args) do
     Process.flag(:trap_exit, true)
-    :ets.new(:user_sessions, [:set, :public, :named_table])
+    :ets.new(Freddie.Session.user_session_table(), [:set, :public, :named_table])
 
     DynamicSupervisor.init(strategy: :one_for_one)
   end

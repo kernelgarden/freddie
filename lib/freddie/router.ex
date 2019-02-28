@@ -220,7 +220,6 @@ defmodule Freddie.Router do
   def get_scheme_seq(scheme) do
     {_, _, terms} = scheme
     mod = Module.concat(terms)
-    # IO.puts("<<<<<<<<<<<<<<<<<<<<called!! #{inspect scheme}, #{inspect mod}")
     root_mod = root_mod_term()
     func_name = Freddie.Router.Builder.key_to_term(mod)
     apply(root_mod, func_name, [])

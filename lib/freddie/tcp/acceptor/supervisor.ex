@@ -1,4 +1,4 @@
-defmodule Freddie.Acceptor.Supervisor do
+defmodule Freddie.TCP.Acceptor.Supervisor do
   use Supervisor
 
   require Logger
@@ -29,7 +29,7 @@ defmodule Freddie.Acceptor.Supervisor do
     |> Enum.map(fn idx ->
       %{
         id: make_acceptor_name(idx),
-        start: {Freddie.Acceptor, :start_link, [idx]},
+        start: {Freddie.TCP.Acceptor, :start_link, [idx]},
         type: :worker,
         shutdown: :brutal_kill
       }

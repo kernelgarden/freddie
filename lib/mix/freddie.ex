@@ -1,6 +1,6 @@
 defmodule Mix.Freddie do
   def watched_modules do
-    watched_modules_list
+    watched_modules_list()
   end
 
   defp watched_modules_list do

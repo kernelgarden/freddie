@@ -173,7 +173,7 @@ defmodule Freddie.Router do
     end
   end
 
-  defp make_schemes({packet_scheme_mod, packet_types_mod}) do
+  defp make_schemes({_packet_scheme_mod, packet_types_mod}) do
     prefix_length = length(Module.split(packet_types_mod))
 
     custom_types = packet_types_mod.enums()

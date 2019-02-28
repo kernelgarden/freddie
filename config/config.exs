@@ -30,4 +30,7 @@ use Mix.Config
 #     import_config "#{Mix.env}.exs"
 
 config :freddie,
-  port: 5050
+  port: 5050,
+  redis_host: "localhost",
+  redis_port: 6379,
+  redis_pool_size: 10

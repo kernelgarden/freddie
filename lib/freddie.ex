@@ -27,6 +27,16 @@ defmodule Freddie do
   defp build_children(port, activate_fprof, activate_eprof) do
     children = []
 
+    # Redix
+    redis_host = Application.get_env(:freddie, :redis_host, "localhost")
+    redis_port = Application.get_env(:freddie, :redis_port, 6379)
+    redis_pool_size = Application.get_env(:freddie, :redis_pool_size, 10)
+
+    children =
+      [
+        {Freddie.Redis.Pool, [host: redis_host, port: redis_port, pool_size: redis_pool_size]}
+      ] ++ children
+
     # Quantum Scheduler
     children =
       [

@@ -28,7 +28,8 @@ defmodule Freddie.MixProject do
       {:exprotobuf, "~> 1.2.9"},
       {:exprof, "~> 0.2.0"},
       {:timex, "~> 3.0"},
-      {:enum_type, "~> 1.0.1"}
+      {:enum_type, "~> 1.0.1"},
+      {:redix, ">= 0.0.0"}
     ]
   end
 

@@ -3,14 +3,12 @@ defmodule Mix.Tasks.Freddie.Server do
 
   @impl true
   def run(args) do
-    Mix.Task.run("loadpaths")
-
     case args do
       ["start"] ->
         start()
 
       _ ->
-        IO.puts("Wrong!")
+        print_guide()
     end
   end
 
@@ -44,5 +42,11 @@ defmodule Mix.Tasks.Freddie.Server do
 
   defp iex_running? do
     Code.ensure_loaded?(IEx) and IEx.started?()
+  end
+
+  defp print_guide do
+    Mix.shell().info(
+      ~S("iex --erl "+spp true" -S mix freddie.server start" or mix freddie.server start)
+    )
   end
 end

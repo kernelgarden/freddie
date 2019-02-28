@@ -1,4 +1,4 @@
-defmodule Freddie.Listener.Supervisor do
+defmodule Freddie.TCP.Listener.Supervisor do
   use Supervisor
 
   require Logger
@@ -16,8 +16,8 @@ defmodule Freddie.Listener.Supervisor do
     :ets.new(:listen_socket, [:set, :public, :named_table])
 
     children = [
-      {Freddie.Listener, [port: port]},
-      Freddie.Acceptor.Supervisor
+      {Freddie.TCP.Listener, [port: port]},
+      Freddie.TCP.Acceptor.Supervisor
     ]
 
     Supervisor.init(children, strategy: :one_for_all, max_restarts: 10, max_seconds: 10)

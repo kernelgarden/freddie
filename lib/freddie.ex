@@ -54,7 +54,7 @@ defmodule Freddie do
     children =
       [
         Freddie.Session.Supervisor,
-        {Freddie.Listener.Supervisor, [port: port]}
+        {Freddie.TCP.Listener.Supervisor, [port: port]}
       ] ++ children
 
     # Fprof

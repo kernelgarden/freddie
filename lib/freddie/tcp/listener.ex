@@ -1,4 +1,4 @@
-defmodule Freddie.Listener do
+defmodule Freddie.TCP.Listener do
   use GenServer, restart: :transient
 
   require Logger
@@ -10,7 +10,7 @@ defmodule Freddie.Listener do
   end
 
   @impl true
-  @spec init(keyword()) :: {:ok, Freddie.Listener.t()} | {:stop, atom()}
+  @spec init(keyword()) :: {:ok, Freddie.TCP.Listener.t()} | {:stop, atom()}
   def init(args) do
     port = Keyword.get(args, :port)
 

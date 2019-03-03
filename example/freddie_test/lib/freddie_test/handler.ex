@@ -4,6 +4,7 @@ defmodule FreddieTest.Handler do
   require Logger
 
   alias FreddieTest.Scheme
+  alias FreddieTest.Handler
 
   defhandler FreddieTest.Scheme.CS_Echo do
     echo = Scheme.SC_Echo.new(msg: msg.msg)
@@ -19,6 +20,11 @@ defmodule FreddieTest.Handler do
     end
     pong = Scheme.SC_EncryptPong.new(msg: "Pong!", idx: msg.idx + 1)
     Freddie.Session.send(context, pong, use_encryption: true)
+  end
+
+  defhandler FreddieTest.Scheme.CS_Login do
+    {context, msg}
+    |> Handler.Login.handle()
   end
 
   connect do

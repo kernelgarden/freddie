@@ -2,6 +2,14 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
+config :freddie_test, FreddieTest.Repo,
+  database: "freddie_test_repo",
+  username: "root",
+  password: "tabstorage",
+  hostname: "localhost"
+
+  config :freddie_test, ecto_repos: [FreddieTest.Repo]
+
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
 # file won't be loaded nor affect the parent project. For this reason,
@@ -30,6 +38,7 @@ use Mix.Config
 #     import_config "#{Mix.env}.exs"
 
 config :freddie,
+  app_mod: :freddie_test,
   scheme_root_mod: FreddieTest.Scheme,
   packet_type_mod: FreddieTest.Packets.Types,
   packet_handler_mod: FreddieTest.Handler

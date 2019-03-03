@@ -67,8 +67,6 @@ defmodule Freddie.Session do
   end
 
   def set_encryption(context, client_public_key) do
-    session = Context.get_session(context)
-
     case lookup_pid(context) do
       {:ok, pid} ->
         GenServer.cast(pid, {:establish_encryption, client_public_key})

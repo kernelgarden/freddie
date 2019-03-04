@@ -87,19 +87,19 @@ defmodule Freddie.Session do
         {:error, reason}
 
       data ->
-        #case internal_send(session.socket, data) do
+        # case internal_send(session.socket, data) do
         #  :port_is_busy ->
-            case lookup_pid(context) do
-              {:ok, pid} ->
-                GenServer.cast(pid, {:resend, data})
+        case lookup_pid(context) do
+          {:ok, pid} ->
+            GenServer.cast(pid, {:resend, data})
 
-              other ->
-                {:error, {:send, other}}
-            end
+          other ->
+            {:error, {:send, other}}
+        end
 
         #  other ->
         #    other
-        #end
+        # end
     end
   end
 
@@ -273,7 +273,7 @@ defmodule Freddie.Session do
     new_context =
       Context.set_session(context, %Session{session | buffer: <<buffer::binary, data::binary>>})
 
-    new_context = Session.PacketHandler.onRead(new_context)
+    new_context = Session.PacketHandler.on_read(new_context)
 
     {:noreply, new_context}
   end

@@ -5,6 +5,7 @@ defmodule Mix.Tasks.Freddie.Routes do
   def run(args) do
     args
     |> Enum.at(0, :none)
+
     IO.puts("Hello, World! - #{args}")
   end
 end

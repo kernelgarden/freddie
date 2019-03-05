@@ -2,5 +2,5 @@ syntax = "proto3";
 package Common;
 
 message CS_Login {
-    int32 idx = 1;
+    int32 id = 1;
 }

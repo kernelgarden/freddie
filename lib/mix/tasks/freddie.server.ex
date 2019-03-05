@@ -2,6 +2,7 @@ defmodule Mix.Tasks.Freddie.Server do
   use Mix.Task
 
   @impl true
+  @shortdoc "Starts current freddie server application."
   def run(args) do
     case args do
       ["start"] ->
@@ -13,11 +14,8 @@ defmodule Mix.Tasks.Freddie.Server do
   end
 
   def start do
-    {:ok, _} = Application.ensure_all_started(:freddie)
-
+    run_by_enviroment()
     renew()
-
-    Mix.Tasks.Run.run(run_args())
   end
 
   def renew do
@@ -36,8 +34,13 @@ defmodule Mix.Tasks.Freddie.Server do
     :file.change_time(module_path, :calendar.local_time())
   end
 
-  defp run_args do
-    if iex_running?(), do: [], else: ["--no-halt"]
+  defp run_by_enviroment() do
+    case iex_running?() do
+      true ->
+        Mix.Tasks.App.Start.run([])
+      false ->
+        Mix.Tasks.Run.run(["--no-halt"])
+    end
   end
 
   defp iex_running? do

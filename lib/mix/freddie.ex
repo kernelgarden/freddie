@@ -12,9 +12,6 @@ defmodule Mix.Freddie do
           watched_modules_list
 
         root_mod ->
-          # IO.puts("mod: #{root_mod} #{inspect Code.ensure_compiled(root_mod)}")
-          # IO.puts("ueeee #{inspect Freddie.Scheme.Common.__info__(:compile)}")
-          # IO.puts("uhhhh #{root_mod.__info__(:compile)}")
           if Code.ensure_loaded?(root_mod),
             do: [root_mod | watched_modules_list],
             else: watched_modules_list

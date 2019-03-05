@@ -1,6 +1,0 @@
-syntax = "proto3";
-package Common;
-
-message CS_Echo {
-    string msg = 1;
-}

@@ -1,4 +1,6 @@
 defmodule Freddie.Security.Aes do
+  @moduledoc false
+
   # http://erlang.org/doc/man/crypto.html#block_encrypt-4
 
   alias __MODULE__

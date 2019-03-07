@@ -1,4 +1,6 @@
 defmodule Freddie.TCP.Listener.Supervisor do
+  @moduledoc false
+
   use Supervisor
 
   require Logger

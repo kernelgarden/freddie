@@ -1,4 +1,9 @@
 defmodule Freddie.Session do
+  @moduledoc """
+  Freddie.Session is a single-ended endpoint that abstracts network connections with clients.
+  You can perform Reliable, Unreliable communications based on TCP, RUDP protocol.
+  """
+
   use GenServer
 
   require Logger
@@ -35,12 +40,25 @@ defmodule Freddie.Session do
     GenServer.start_link(__MODULE__, nil)
   end
 
+  @doc false
   def set_socket(pid, socket) do
     GenServer.cast(pid, {:socket_ready, socket})
   end
 
+  @doc false
   def user_session_table, do: @user_session_table
 
+  @doc """
+  Returns the pid of the session process associated with the passed context.
+  ## Examples
+      case lookup_pid(context) do
+        {:ok, pid} ->
+          # do something
+
+        other ->
+          {:error, other}
+      end
+  """
   def lookup_pid(context) do
     session = Context.get_session(context)
 
@@ -56,6 +74,11 @@ defmodule Freddie.Session do
     end
   end
 
+  @doc """
+  Update the context bound to session.
+  (This request is handled asynchronously through a cast call internally,
+  so it is likely that other processes will temporarily refer to the previous context.)
+  """
   def update_context(new_context) do
     case lookup_pid(new_context) do
       {:ok, pid} ->
@@ -66,6 +89,7 @@ defmodule Freddie.Session do
     end
   end
 
+  @doc false
   def set_encryption(context, client_public_key) do
     case lookup_pid(context) do
       {:ok, pid} ->
@@ -76,6 +100,9 @@ defmodule Freddie.Session do
     end
   end
 
+  @doc """
+  Sends packets to clients associated with passed context.
+  """
   def send(context, msg, opts \\ []) do
     session = Context.get_session(context)
 
@@ -87,8 +114,6 @@ defmodule Freddie.Session do
         {:error, reason}
 
       data ->
-        # case internal_send(session.socket, data) do
-        #  :port_is_busy ->
         case lookup_pid(context) do
           {:ok, pid} ->
             GenServer.cast(pid, {:resend, data})
@@ -96,10 +121,6 @@ defmodule Freddie.Session do
           other ->
             {:error, {:send, other}}
         end
-
-        #  other ->
-        #    other
-        # end
     end
   end
 

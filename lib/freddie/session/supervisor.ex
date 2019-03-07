@@ -1,4 +1,6 @@
 defmodule Freddie.Session.Supervisor do
+  @moduledoc false
+
   use DynamicSupervisor
 
   require Logger

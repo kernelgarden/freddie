@@ -9,7 +9,8 @@ defmodule Freddie.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
-      description: description()
+      description: description(),
+      docs: docs()
     ]
   end
 
@@ -38,7 +39,8 @@ defmodule Freddie.MixProject do
     [
       files: ["lib", "mix.exs", "README.md", "LICENSE", "config/config.exs"],
       maintainers: ["kernelgarden"],
-      license: ["Apache 2.0"]
+      licenses: ["MIT"],
+      links: %{github: "https://github.com/kernelgarden/freddie"}
     ]
   end
 
@@ -46,5 +48,30 @@ defmodule Freddie.MixProject do
     """
     Socket framework for elixir.
     """
+  end
+
+  defp docs do
+    [
+      main: "Freddie",
+      formatters: ["html", "epub"],
+      groups_for_modules: groups_for_modules(),
+      extra_section: "GUIDES",
+      extras: extras()
+    ]
+  end
+
+  defp extras do
+    ["README.md"]
+  end
+
+  defp groups_for_modules do
+    [
+      "Utils": [
+        Freddie.Utils,
+        Freddie.Utils.Binary,
+        Freddie.Utils.Eprof,
+        Freddie.Utils.Fprof
+      ]
+    ]
   end
 end

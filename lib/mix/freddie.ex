@@ -1,4 +1,6 @@
 defmodule Mix.Freddie do
+  @moduledoc false
+
   def watched_modules do
     watched_modules_list()
   end

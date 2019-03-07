@@ -1,4 +1,6 @@
 defmodule Freddie.TCP.Acceptor do
+  @moduledoc false
+
   use GenServer, restart: :transient
 
   require Logger

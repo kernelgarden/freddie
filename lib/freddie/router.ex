@@ -1,10 +1,70 @@
 defmodule Freddie.Router do
+  @moduledoc """
+  Freddie.Router is a module for protocol handling.
+
+  This module dispatch messages from socket. You can use meta of packet and msg and context.
+
+  - meta => Freddie.Scheme.Common.Meta
+
+  - msg => Custom Packet
+
+  - context => Freddie.Context
+
+  ## Examples
+
+      defmodule EchoServer.Router do
+        use Freddie.Router
+
+        require Logger
+
+        # defined pakcet schemes
+        alias EchoServer.Scheme
+
+        # defined event handlers
+        alias EchoServer.Handler
+
+        defhandler EchoServer.Scheme.CS_Echo do
+          echo = Scheme.SC_Echo.new(msg: msg.msg)
+          Freddie.Session.send(context, echo)
+        end
+
+        defhandler EchoServer.Scheme.CS_EncryptPing do
+          case meta.use_encryption do
+            true ->
+              # do process
+            false ->
+              # do other process
+          end
+          pong = Scheme.SC_EncryptPong.new(msg: "Pong!", idx: msg.idx + 1)
+          Freddie.Session.send(context, pong, use_encryption: true)
+        end
+
+        defhandler EchoServer.Scheme.CS_Login do
+          {context, msg}
+          |> Handler.Login.handle()
+        end
+
+        # connect is a special handler who can control the connection of a session.
+        connect do
+          Logger.info("Client is connected!")
+        end
+
+        # disconnect is a special handler who can control the disconnection of a session.
+        disconnect do
+          Logger.info("Client is disconnected!")
+        end
+
+      end
+
+  """
+
   require Logger
 
   @root_module SchemeTable
 
   @on_load :load_scheme_table
 
+  @doc false
   defmacro __using__(_opts) do
     quote do
       import Freddie.Router
@@ -36,13 +96,16 @@ defmodule Freddie.Router do
     end
   end
 
+  @doc false
   defmacro __before_compile__(_env) do
     compile_scheme_table()
   end
 
+  @doc false
   defmacro __after_compile__(_env, _byte_code) do
   end
 
+  @doc false
   defmacro defhandler(protocol, body) do
     protocol_seq = get_scheme_seq(protocol)
 
@@ -133,7 +196,7 @@ defmodule Freddie.Router do
     case packet_scheme_mod == nil or packet_types_mod == nil do
       true ->
         Logger.warn("packet_handler_mod doesn't registered")
-        :abort
+        :ok
 
       false ->
         case Code.ensure_compiled?(Freddie.InternalPackets.Types) and

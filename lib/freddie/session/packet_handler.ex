@@ -1,4 +1,6 @@
 defmodule Freddie.Session.PacketHandler do
+  @moduledoc false
+
   # header size is unsigned integer of 2 byte
   @header_size 2 * 8
 

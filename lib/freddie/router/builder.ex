@@ -1,4 +1,6 @@
 defmodule Freddie.Router.Builder do
+  @moduledoc false
+
   import :erl_syntax
 
   def compile(module, schemes) do

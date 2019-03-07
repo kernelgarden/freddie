@@ -1,4 +1,6 @@
 defmodule Freddie.Scheme.Common do
+  @moduledoc false
+
   use Protobuf,
     from: Path.wildcard(Path.expand("./definitions/**/*.proto", __DIR__)),
     use_package_names: true,

@@ -40,17 +40,13 @@ defmodule Freddie.Security.Aes do
     iv <> cipher_tag <> cipher_text
   end
 
-  @spec decrypt(
-          binary()
-          | maybe_improper_list(
-              binary() | maybe_improper_list(any(), binary() | []) | byte(),
-              binary() | []
-            ),
-          <<_::64, _::_*8>>
-        ) :: :error | binary()
-  def decrypt(aes_key, cipher_block) do
-    <<iv::binary-@iv_size, cipher_tag::binary-@tag_size, cipher_text::binary>> = cipher_block
+  @spec decrypt(any(), any()) :: :error | binary()
+  def decrypt(<<iv::binary-@iv_size, cipher_tag::binary-@tag_size, cipher_text::binary>>, aes_key) do
     :crypto.block_decrypt(@cipher_mode, aes_key, iv, {@aad, cipher_text, cipher_tag})
+  end
+
+  def decrypt(_aes_key, _) do
+    :error
   end
 
   def test() do
@@ -70,7 +66,7 @@ defmodule Freddie.Security.Aes do
       Freddie.Security.DiffieHellman.generate_public_key(server_private_key)
       |> IO.inspect(label: "[Debug] server_public_key: ")
 
-    client_secret_key =
+    _client_secret_key =
       Freddie.Security.DiffieHellman.generate_secret_key(server_public_key, client_private_key)
       |> IO.inspect(label: "[Debug] client_secret_key: ")
 
@@ -92,8 +88,8 @@ defmodule Freddie.Security.Aes do
       Aes.encrypt(aes_key, plain_text)
       |> IO.inspect(label: "[Debug] cipher_block: ")
 
-    decrypt_text =
-      Aes.decrypt(aes_key, cipher_block)
+    _decrypt_text =
+      Aes.decrypt(cipher_block, aes_key)
       |> IO.inspect(label: "[Debug] decrypt_text: ")
   end
 end

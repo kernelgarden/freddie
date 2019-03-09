@@ -98,7 +98,7 @@ defmodule Freddie.Scheme.Common do
           message.payload
 
         true ->
-          Security.Aes.decrypt(aes_key, message.payload)
+          Security.Aes.decrypt(message.payload, aes_key)
       end
 
     {message.meta.command, message.meta, payload}

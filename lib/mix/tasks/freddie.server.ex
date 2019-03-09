@@ -38,6 +38,7 @@ defmodule Mix.Tasks.Freddie.Server do
     case iex_running?() do
       true ->
         Mix.Tasks.App.Start.run([])
+
       false ->
         Mix.Tasks.Run.run(["--no-halt"])
     end

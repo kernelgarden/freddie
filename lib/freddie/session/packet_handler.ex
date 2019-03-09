@@ -1,9 +1,13 @@
 defmodule Freddie.Session.PacketHandler do
   @moduledoc false
 
-  # header size is unsigned integer of 2 byte
-  @header_unit 2
+  # header size is unsigned integer of 4 byte
+  @header_unit 4
   @header_size @header_unit * 8
+
+  def header_unit(), do: @header_unit
+
+  def header_size(), do: @header_size
 
   @spec on_read(Freddie.Context.t()) :: Freddie.Context.t()
   def on_read(%Freddie.Context{session: %Freddie.Session{} = session} = context) do
@@ -28,6 +32,7 @@ defmodule Freddie.Session.PacketHandler do
   defp parse(<<length::big-@header_size, data::binary>> = buffer, context) do
     # not good use unknown-length matches on sub-binaries, so i calculate first!
     rest_len = byte_size(buffer) - (@header_unit + length)
+
     case data do
       <<cur_data::binary-size(length), remain::binary-size(rest_len)>> ->
         session = Freddie.Context.get_session(context)

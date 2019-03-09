@@ -10,7 +10,7 @@ defmodule Freddie.Scheme.Common do
   alias Freddie.Scheme.Common.Message
   alias Freddie.Security
 
-  @max_packet_size 65535
+  @max_packet_size 4_294_967_295
 
   def new_message(payload, aes_key, opts) do
     use_encryption =

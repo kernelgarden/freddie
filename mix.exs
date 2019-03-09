@@ -66,7 +66,7 @@ defmodule Freddie.MixProject do
 
   defp groups_for_modules do
     [
-      "Utils": [
+      Utils: [
         Freddie.Utils,
         Freddie.Utils.Binary,
         Freddie.Utils.Eprof,

@@ -52,7 +52,7 @@ defmodule Freddie.MixProject do
 
   defp docs do
     [
-      main: "Freddie",
+      main: "readme",
       formatters: ["html", "epub"],
       groups_for_modules: groups_for_modules(),
       extra_section: "GUIDES",

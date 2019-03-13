@@ -13,6 +13,6 @@ Freddie is a socket framework for Elixir.
 2. Optimize network code
 3. Divide transmission into reliable and unreliable
 
-## 3. examples
+## 3. Examples
 
 [example projects](https://github.com/kernelgarden/freddie_example)

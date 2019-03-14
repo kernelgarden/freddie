@@ -5,8 +5,6 @@ defmodule Freddie.TCP.Acceptor.Supervisor do
 
   require Logger
 
-  @num_of_acceptor 10
-
   def start_link(args) do
     Supervisor.start_link(__MODULE__, args, name: __MODULE__)
   end
@@ -27,7 +25,9 @@ defmodule Freddie.TCP.Acceptor.Supervisor do
   end
 
   defp make_children_list do
-    1..@num_of_acceptor
+    acceptor_pool_size = Application.get_env(:freddie, :acceptor_pool_size, 16)
+
+    1..acceptor_pool_size
     |> Enum.map(fn idx ->
       %{
         id: make_acceptor_name(idx),

@@ -1,6 +1,4 @@
-# Freddie: Elixir Socket Framework
-
-See the getting started guide and the [online documentation](https://hexdocs.pm/freddie/).
+# Getting Started
 
 ## Overview
 

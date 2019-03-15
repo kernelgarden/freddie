@@ -4,7 +4,7 @@ defmodule Freddie.MixProject do
   def project do
     [
       app: :freddie,
-      version: "0.1.2",
+      version: "0.1.3",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -52,16 +52,19 @@ defmodule Freddie.MixProject do
 
   defp docs do
     [
-      main: "readme",
+      main: "getting-started",
       formatters: ["html", "epub"],
       groups_for_modules: groups_for_modules(),
       extra_section: "GUIDES",
-      extras: extras()
+      extras: extras(),
+      groups_for_extras: groups_for_extras()
     ]
   end
 
   defp extras do
-    ["README.md"]
+    [
+      "guides/Getting Started.md"
+    ]
   end
 
   defp groups_for_modules do
@@ -72,6 +75,12 @@ defmodule Freddie.MixProject do
         Freddie.Utils.Eprof,
         Freddie.Utils.Fprof
       ]
+    ]
+  end
+
+  defp groups_for_extras do
+    [
+      "Guides": ~r/guides\/[^\/]+\.md/
     ]
   end
 end

@@ -1,4 +1,4 @@
-defmodule <%= app_mod %>.Packets do
+defmodule <%= app_mod %>.Protocol do
   use EnumType
 
   # define packet type and packet number (please type full name)

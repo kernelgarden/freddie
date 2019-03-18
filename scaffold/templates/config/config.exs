@@ -18,7 +18,7 @@ config :freddie,
   redis_pool_size: 10,
   # Type srotocol scheme root mod
   scheme_root_mod: <%= app_mod %>.Scheme,
-  # Type packet type root mod
-  packet_type_mod: <%= app_mod %>.Packets.Types,
+  # Type protocol type root mod
+  packet_type_mod: <%= app_mod %>.Protocol.Types,
   # Type packet handler mod (derive from Freddie.Router)
   packet_handler_mod: <%= app_mod %>.Handler

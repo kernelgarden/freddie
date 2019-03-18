@@ -6,7 +6,8 @@ defmodule FreddieScaffold.ProjectInfo do
 
   defstruct app_name: "",
             app_mod: "",
-            target_path: "",
+            freddie_version: "",
+            target_path: ""
 
   def new(target_path, app_name) do
     validate_name(app_name)
@@ -16,8 +17,17 @@ defmodule FreddieScaffold.ProjectInfo do
     %ProjectInfo{
       app_name: app_name,
       app_mod: app_mod,
+      freddie_version: Scaffold.MixProject.project[:version],
       target_path: target_path
     }
+  end
+
+  def get_replacer(project_info) do
+    [
+      app_name: project_info.app_name,
+      app_mod: project_info.app_mod,
+      freddie_version: project_info.freddie_version
+    ]
   end
 
   defp validate_name(app_name) do

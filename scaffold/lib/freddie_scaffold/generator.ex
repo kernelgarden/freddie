@@ -21,8 +21,6 @@ defmodule FreddieScaffold.Generator do
       Mix.raise("Failed to create root directory!")
     end
 
-    #template_path = Path.expand(@template_path)
-
     copy_root(project_info, "")
   end
 
@@ -62,10 +60,9 @@ defmodule FreddieScaffold.Generator do
   defp copy_dir(project_info, path, name) do
     new_file_path = make_new_file_path(project_info, path, name)
 
-    IO.puts("Dir: copy #{inspect new_file_path}")
-    #if File.mkdir_p(new_file_path) != :ok do
-    #  Mix.raise("Failed to create directory #{inspect new_file_path}!")
-    #end
+    if File.mkdir_p(new_file_path) != :ok do
+      Mix.raise("Failed to create directory #{inspect new_file_path}!")
+    end
   end
 
   defp copy_file(project_info, path, name) do
@@ -78,19 +75,15 @@ defmodule FreddieScaffold.Generator do
     # adopt eex
     contents = EEx.eval_file(file_path, FreddieScaffold.ProjectInfo.get_replacer(project_info))
 
-    IO.puts("File: copy #{inspect new_file_path}")
-    #File.write(new_file_path, contents, [:write])
+    File.write(new_file_path, contents, [:write])
   end
 
   defp make_new_file_path(project_info, path, name) do
-    new_file_name =
-      name
-      |> String.replace(@app_name_holder, project_info.app_name)
-      |> String.replace(@app_mod_holder, project_info.app_mod)
-
-    new_file_path = Path.join([project_info.target_path, project_info.app_name, path, new_file_name])
+    new_file_path = Path.join([project_info.target_path, project_info.app_name, path, name])
 
     new_file_path
+    |> String.replace(@app_name_holder, project_info.app_name)
+    |> String.replace(@app_mod_holder, project_info.app_mod)
   end
 
   defp template_path() do

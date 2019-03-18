@@ -7,7 +7,6 @@ defmodule Mix.Tasks.Freddie.Scaffold do
 
   @impl true
   def run(args) do
-    IO.puts("#{inspect args}")
     validate_elixir_version()
 
     case args do

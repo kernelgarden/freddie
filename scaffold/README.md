@@ -1,20 +1,18 @@
 # Scaffold
 
-**TODO: Add description**
+Scaffolding tool for freddie
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `scaffold` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:scaffold, "~> 0.1.0"}
-  ]
-end
+```console
+$ mix local.hex
+$ mix archive.install hex freddie.scaffold [version]
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/scaffold](https://hexdocs.pm/scaffold).
+## Create Freddie Application
+
+Create a project with the following commands:
+
+```console
+$ mix freddie.scaffold echo_server
+```

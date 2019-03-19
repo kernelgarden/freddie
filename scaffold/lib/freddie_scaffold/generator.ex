@@ -21,6 +21,9 @@ defmodule FreddieScaffold.Generator do
       Mix.raise("Failed to create root directory!")
     end
 
+    IO.ANSI.format([:green, "  [create]", :white, "  #{app_name}"], true)
+    |> IO.puts()
+
     copy_root(project_info, "")
   end
 
@@ -63,6 +66,8 @@ defmodule FreddieScaffold.Generator do
     if File.mkdir_p(new_file_path) != :ok do
       Mix.raise("Failed to create directory #{inspect new_file_path}!")
     end
+
+    print_create(path, name, project_info)
   end
 
   defp copy_file(project_info, path, name) do
@@ -76,12 +81,18 @@ defmodule FreddieScaffold.Generator do
     contents = EEx.eval_file(file_path, FreddieScaffold.ProjectInfo.get_replacer(project_info))
 
     File.write(new_file_path, contents, [:write])
+
+    print_create(path, name, project_info)
   end
 
   defp make_new_file_path(project_info, path, name) do
-    new_file_path = Path.join([project_info.target_path, project_info.app_name, path, name])
+    [project_info.target_path, project_info.app_name, path, name]
+    |> Path.join()
+    |> replace_holder(project_info)
+  end
 
-    new_file_path
+  defp replace_holder(base_string, project_info) do
+    base_string
     |> String.replace(@app_name_holder, project_info.app_name)
     |> String.replace(@app_mod_holder, project_info.app_mod)
   end
@@ -92,5 +103,28 @@ defmodule FreddieScaffold.Generator do
 
   defp with_template_path(trail) do
     Path.join(template_path(), trail)
+  end
+
+  defp print_create(path, name, project_info) do
+    path = replace_holder(path, project_info)
+    name = replace_holder(name, project_info)
+
+    IO.ANSI.format([:green, "  [create]"], true)
+    |> IO.write()
+
+    print_depth(path)
+
+    IO.ANSI.format([:white, "  #{name}\n"], true)
+    |> IO.write()
+  end
+
+  defp print_depth(path) do
+    depth =
+      path
+      |> Path.split()
+      |> Enum.count()
+
+    String.duplicate("  ", depth + 1)
+    |> IO.write()
   end
 end

@@ -17,7 +17,7 @@ defmodule FreddieScaffold.ProjectInfo do
     %ProjectInfo{
       app_name: app_name,
       app_mod: app_mod,
-      freddie_version: Scaffold.MixProject.project[:version],
+      freddie_version: FreddieScaffold.MixProject.project[:version],
       target_path: target_path
     }
   end

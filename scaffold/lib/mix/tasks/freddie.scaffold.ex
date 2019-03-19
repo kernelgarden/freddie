@@ -6,6 +6,7 @@ defmodule Mix.Tasks.Freddie.Scaffold do
   @elixir_version ">= 1.6.0"
 
   @impl true
+  @shortdoc "Create a new freddie server application."
   def run(args) do
     validate_elixir_version()
 
@@ -16,6 +17,8 @@ defmodule Mix.Tasks.Freddie.Scaffold do
         {executed_path, app_name}
         |> Generator.generate()
 
+        print_success_msg(app_name)
+
       _ -> Mix.raise("Invalid intput!\nPlease type: mix freddie.scaffold [app_name]")
     end
   end
@@ -24,6 +27,10 @@ defmodule Mix.Tasks.Freddie.Scaffold do
     unless Version.match?(System.version, @elixir_version) do
       Mix.raise("Freddie require Elixir #{@elixir_version} version. You have #{System.version} now.")
     end
+  end
+
+  defp print_success_msg(app_name) do
+    IO.puts("\nCreate #{app_name} successfully!")
   end
 
 end

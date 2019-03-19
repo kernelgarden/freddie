@@ -3,7 +3,7 @@ defmodule FreddieScaffold.Generator do
   @app_name_holder "app_name"
   @app_mod_holder "app_mod"
 
-  @template_path "./templates"
+  @template_path "../../templates"
 
   def generate({target_path, app_name}) do
     validate_templates()
@@ -28,7 +28,7 @@ defmodule FreddieScaffold.Generator do
   end
 
   defp validate_templates() do
-    unless Path.basename("templates") do
+    unless File.exists?(template_path()) do
       Mix.raise("Missing templates!")
     end
   end
@@ -98,7 +98,7 @@ defmodule FreddieScaffold.Generator do
   end
 
   defp template_path() do
-    Path.expand(@template_path)
+    Path.expand(@template_path, __DIR__)
   end
 
   defp with_template_path(trail) do

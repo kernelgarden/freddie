@@ -6,7 +6,7 @@ Scaffolding tool for freddie
 
 ```console
 $ mix local.hex
-$ mix archive.install hex freddie.scaffold [version]
+$ mix archive.install hex freddie_scaffold [version]
 ```
 
 ## Create Freddie Application

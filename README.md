@@ -33,11 +33,9 @@ Freddie's internal structure can be separated in several ways. Each element work
 
 ## Installation
 
-I'm not ready yet. But you'll probably use it as follows:
-
 ```console
 $ mix local.hex
-$ mix archive.install hex freddie.scaffold [version]
+$ mix archive.install hex freddie_scaffold [version]
 ```
 
 ## Create Freddie Application

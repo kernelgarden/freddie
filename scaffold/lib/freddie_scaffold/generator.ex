@@ -1,15 +1,11 @@
 defmodule FreddieScaffold.Generator do
 
+  alias FreddieScaffold.ProjectInfo
+
   @app_name_holder "app_name"
   @app_mod_holder "app_mod"
 
-  @template_path "../../templates"
-
-  def generate({target_path, app_name}) do
-    validate_templates()
-
-    project_info = FreddieScaffold.ProjectInfo.new(target_path, app_name)
-
+  def generate(project_info) do
     root = Path.join(project_info.target_path, project_info.app_name)
 
     if File.exists?(root) do
@@ -21,72 +17,36 @@ defmodule FreddieScaffold.Generator do
       Mix.raise("Failed to create root directory!")
     end
 
-    IO.ANSI.format([:green, "  [create]", :white, "  #{app_name}"], true)
+    IO.ANSI.format([:green, "  [create]", :white, "  #{Path.join(project_info.app_name, project_info.template_type)}"], true)
     |> IO.puts()
 
-    copy_root(project_info, "")
+    project_info.template_list
+    |> Enum.each(&copy_file(project_info, &1))
   end
 
-  defp validate_templates() do
-    unless File.exists?(template_path()) do
-      Mix.raise("Missing templates!")
-    end
-  end
-
-  defp copy_root(project_info, path) do
-    root_path = with_template_path(path)
-
-    case File.ls(root_path) do
-      {:ok, files} ->
-        files
-        |> Enum.each(&copy(project_info, path, &1))
-      {:error, reason} ->
-        Mix.raise("Failed to ls #{inspect root_path}!, reason: #{inspect reason}")
-    end
-  end
-
-  defp copy(project_info, path, name) do
-    file_path = Path.join(with_template_path(path), name)
-
-    case File.dir?(file_path) do
-      true ->
-        copy_dir(project_info, path, name)
-
-        # process recursive for directory
-        copy_root(project_info, Path.join(path, name))
-
-      false ->
-        copy_file(project_info, path, name)
-    end
-  end
-
-  defp copy_dir(project_info, path, name) do
-    new_file_path = make_new_file_path(project_info, path, name)
-
-    if File.mkdir_p(new_file_path) != :ok do
-      Mix.raise("Failed to create directory #{inspect new_file_path}!")
-    end
-
-    print_create(path, name, project_info)
-  end
-
-  defp copy_file(project_info, path, name) do
-    # origin file path
-    file_path = Path.join(with_template_path(path), name)
-
+  defp copy_file(project_info, identifier) do
     # new file path
-    new_file_path = make_new_file_path(project_info, path, name)
+    new_file_path =
+      make_new_file_path(project_info, identifier)
+      |> make_dir_if_not_exists()
 
     # adopt eex
-    contents = EEx.eval_file(file_path, FreddieScaffold.ProjectInfo.get_replacer(project_info))
+    contents = EEx.eval_string(project_info.firewood.get(identifier), ProjectInfo.get_replacer(project_info))
 
-    File.write(new_file_path, contents, [:write])
+    File.write!(new_file_path, contents, [:write])
 
-    print_create(path, name, project_info)
+    print_create(identifier, project_info)
   end
 
-  defp make_new_file_path(project_info, path, name) do
-    [project_info.target_path, project_info.app_name, path, name]
+  defp make_dir_if_not_exists(file_path) do
+    String.trim_trailing(file_path, Path.join("/", Path.basename(file_path)))
+    |> File.mkdir_p!()
+
+    file_path
+  end
+
+  defp make_new_file_path(project_info, identifier) do
+    [project_info.target_path, project_info.app_name, String.trim_leading(identifier, project_info.template_type)]
     |> Path.join()
     |> replace_holder(project_info)
   end
@@ -97,24 +57,15 @@ defmodule FreddieScaffold.Generator do
     |> String.replace(@app_mod_holder, project_info.app_mod)
   end
 
-  defp template_path() do
-    Path.expand(@template_path, __DIR__)
-  end
-
-  defp with_template_path(trail) do
-    Path.join(template_path(), trail)
-  end
-
-  defp print_create(path, name, project_info) do
+  defp print_create(path, project_info) do
     path = replace_holder(path, project_info)
-    name = replace_holder(name, project_info)
 
     IO.ANSI.format([:green, "  [create]"], true)
     |> IO.write()
 
     print_depth(path)
 
-    IO.ANSI.format([:white, "  #{name}\n"], true)
+    IO.ANSI.format([:white, "  #{path}\n"], true)
     |> IO.write()
   end
 
@@ -124,7 +75,7 @@ defmodule FreddieScaffold.Generator do
       |> Path.split()
       |> Enum.count()
 
-    String.duplicate("  ", depth + 1)
+    String.duplicate("  ", depth - 1)
     |> IO.write()
   end
 end

@@ -7,9 +7,13 @@ defmodule FreddieScaffold.ProjectInfo do
   defstruct app_name: "",
             app_mod: "",
             freddie_version: "",
-            target_path: ""
+            target_path: "",
+            template_type: "",
+            template_list: [],
+            project_prefix: "",
+            firewood: nil
 
-  def new(target_path, app_name) do
+  def new({target_path, app_name, firewood}) do
     validate_name(app_name)
 
     app_mod = Macro.camelize(app_name)
@@ -18,7 +22,11 @@ defmodule FreddieScaffold.ProjectInfo do
       app_name: app_name,
       app_mod: app_mod,
       freddie_version: "0.1.3",
-      target_path: target_path
+      target_path: target_path,
+      template_type: firewood.get_template_type(),
+      template_list: firewood.get_template_list(),
+      project_prefix: firewood.get_template_prefix(),
+      firewood: firewood
     }
   end
 

@@ -1,7 +1,7 @@
 defmodule Mix.Tasks.Freddie.Scaffold do
   use Mix.Task
 
-  alias FreddieScaffold.Generator
+  alias FreddieScaffold.{Generator, Firewood}
 
   @elixir_version ">= 1.6.0"
 
@@ -14,7 +14,11 @@ defmodule Mix.Tasks.Freddie.Scaffold do
       [app_name | _] ->
         {:ok, executed_path} = File.cwd()
 
-        {executed_path, app_name}
+        # now, we have only a normal_app
+        firewood = Firewood.NormalApp
+
+        {executed_path, app_name, firewood}
+        |> FreddieScaffold.ProjectInfo.new()
         |> Generator.generate()
 
         print_success_msg(app_name)

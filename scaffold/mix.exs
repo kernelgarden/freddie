@@ -33,7 +33,8 @@ defmodule FreddieScaffold.MixProject do
       files: ["lib", "mix.exs", "README.md", "LICENSE", "config/config.exs"],
       maintainers: ["kernelgarden"],
       licenses: ["MIT"],
-      links: %{github: "https://github.com/kernelgarden/freddie"}
+      links: %{github: "https://github.com/kernelgarden/freddie"},
+      files: ~w(lib templates mix.exs README.md)
     ]
   end
 

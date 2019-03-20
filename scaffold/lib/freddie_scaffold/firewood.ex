@@ -1,5 +1,4 @@
 defmodule FreddieScaffold.Firewood do
-
   @scaffold_path Path.expand("../../", __DIR__)
 
   @templates_dir "templates"
@@ -21,17 +20,17 @@ defmodule FreddieScaffold.Firewood do
     {template_list, target_resources_ast} =
       traverse(target)
       |> Enum.reduce({[], []}, fn {identifier, file_path}, {identifier_acc, ast_acc} ->
-          {
-            [identifier | identifier_acc],
-            [
-              quote do
-                @external_resource unquote(file_path)
-                def get(unquote(identifier)), do: unquote(File.read!(file_path))
-              end
-              | ast_acc
-            ]
-          }
-        end)
+        {
+          [identifier | identifier_acc],
+          [
+            quote do
+              @external_resource unquote(file_path)
+              def get(unquote(identifier)), do: unquote(File.read!(file_path))
+            end
+            | ast_acc
+          ]
+        }
+      end)
 
     quote do
       unquote(target_resources_ast)
@@ -64,8 +63,9 @@ defmodule FreddieScaffold.Firewood do
     case File.ls(root_path) do
       {:ok, files} ->
         files
+
       {:error, reason} ->
-        Mix.raise("Failed to ls #{inspect root_path}!, reason: #{inspect reason}")
+        Mix.raise("Failed to ls #{inspect(root_path)}!, reason: #{inspect(reason)}")
     end
     |> Stream.flat_map(fn file ->
       file_path = Path.join(root_path, file)
@@ -78,5 +78,4 @@ defmodule FreddieScaffold.Firewood do
     end)
     |> Enum.to_list()
   end
-
 end

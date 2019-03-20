@@ -44,7 +44,7 @@ defmodule FreddieScaffold.MixProject do
     """
   end
 
-   defp docs do
+  defp docs do
     [
       main: "readme",
       formatters: ["html", "epub"],
@@ -55,5 +55,4 @@ defmodule FreddieScaffold.MixProject do
   defp extras do
     ["README.md"]
   end
-
 end

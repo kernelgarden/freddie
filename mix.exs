@@ -80,7 +80,7 @@ defmodule Freddie.MixProject do
 
   defp groups_for_extras do
     [
-      "Guides": ~r/guides\/[^\/]+\.md/
+      Guides: ~r/guides\/[^\/]+\.md/
     ]
   end
 end

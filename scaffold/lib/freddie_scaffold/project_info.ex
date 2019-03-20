@@ -1,5 +1,4 @@
 defmodule FreddieScaffold.ProjectInfo do
-
   alias __MODULE__
 
   @restrict_chars ["."]
@@ -43,5 +42,4 @@ defmodule FreddieScaffold.ProjectInfo do
       Mix.raise("Invalid app name!")
     end
   end
-
 end

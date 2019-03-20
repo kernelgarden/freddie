@@ -1,5 +1,4 @@
 defmodule FreddieScaffold.Generator do
-
   alias FreddieScaffold.ProjectInfo
 
   @app_name_holder "app_name"
@@ -9,7 +8,7 @@ defmodule FreddieScaffold.Generator do
     root = Path.join(project_info.target_path, project_info.app_name)
 
     if File.exists?(root) do
-      Mix.raise("Already exists #{inspect root}!")
+      Mix.raise("Already exists #{inspect(root)}!")
     end
 
     # create target root
@@ -17,7 +16,15 @@ defmodule FreddieScaffold.Generator do
       Mix.raise("Failed to create root directory!")
     end
 
-    IO.ANSI.format([:green, "  [create]", :white, "  #{Path.join(project_info.app_name, project_info.template_type)}"], true)
+    IO.ANSI.format(
+      [
+        :green,
+        "  [create]",
+        :white,
+        "  #{Path.join(project_info.app_name, project_info.template_type)}"
+      ],
+      true
+    )
     |> IO.puts()
 
     project_info.template_list
@@ -31,7 +38,11 @@ defmodule FreddieScaffold.Generator do
       |> make_dir_if_not_exists()
 
     # adopt eex
-    contents = EEx.eval_string(project_info.firewood.get(identifier), ProjectInfo.get_replacer(project_info))
+    contents =
+      EEx.eval_string(
+        project_info.firewood.get(identifier),
+        ProjectInfo.get_replacer(project_info)
+      )
 
     File.write!(new_file_path, contents, [:write])
 
@@ -46,7 +57,11 @@ defmodule FreddieScaffold.Generator do
   end
 
   defp make_new_file_path(project_info, identifier) do
-    [project_info.target_path, project_info.app_name, String.trim_leading(identifier, project_info.template_type)]
+    [
+      project_info.target_path,
+      project_info.app_name,
+      String.trim_leading(identifier, project_info.template_type)
+    ]
     |> Path.join()
     |> replace_holder(project_info)
   end

@@ -1,4 +1,4 @@
-defmodule EchoServer.MixProject do
+defmodule <%= app_mod %>.MixProject do
   use Mix.Project
 
   def project do

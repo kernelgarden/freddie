@@ -18,11 +18,47 @@ defmodule Freddie.Redis.Pool do
     )
   end
 
-  def command(command) do
+  def command(command, opts \\ []) do
     :poolboy.transaction(
       __MODULE__,
       fn redix_pid ->
-        Redix.command(redix_pid, command)
+        Redix.command(redix_pid, command, opts)
+      end
+    )
+  end
+
+  def noreply_command(command, opts \\ []) do
+    :poolboy.transaction(
+      __MODULE__,
+      fn redix_pid ->
+        Redix.noreply_command(redix_pid, command, opts)
+      end
+    )
+  end
+
+  def pipeline(command, opts \\ []) do
+    :poolboy.transaction(
+      __MODULE__,
+      fn redix_pid ->
+        Redix.pipeline(redix_pid, command, opts)
+      end
+    )
+  end
+
+  def noreply_pipeline(command, opts \\ []) do
+    :poolboy.transaction(
+      __MODULE__,
+      fn redix_pid ->
+        Redix.noreply_pipeline(redix_pid, command, opts)
+      end
+    )
+  end
+
+  def transaction_pipeline(command, opts \\ []) do
+    :poolboy.transaction(
+      __MODULE__,
+      fn redix_pid ->
+        Redix.transaction_pipeline(redix_pid, command, opts)
       end
     )
   end

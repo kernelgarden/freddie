@@ -20,7 +20,7 @@ defmodule FreddieScaffold.ProjectInfo do
     %ProjectInfo{
       app_name: app_name,
       app_mod: app_mod,
-      freddie_version: "0.1.3",
+      freddie_version: "0.1.4",
       target_path: target_path,
       template_type: firewood.get_template_type(),
       template_list: firewood.get_template_list(),

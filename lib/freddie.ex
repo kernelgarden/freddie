@@ -28,14 +28,23 @@ defmodule Freddie do
     children = []
 
     # Redix
-    redis_host = Application.get_env(:freddie, :redis_host, "localhost")
-    redis_port = Application.get_env(:freddie, :redis_port, 6379)
-    redis_pool_size = Application.get_env(:freddie, :redis_pool_size, 10)
 
     children =
-      [
-        {Freddie.Redis.Pool, [host: redis_host, port: redis_port, pool_size: redis_pool_size]}
-      ] ++ children
+      with {:ok, redis_host} <- Application.fetch_env(:freddie, :redis_host),
+           {:ok, redis_port} <- Application.fetch_env(:freddie, :redis_port),
+           {:ok, redis_pool_size} <- Application.fetch_env(:freddie, :redis_pool_size) do
+        Logger.info(
+          "connect to redis host: #{inspect(redis_host)}, port #{inspect(redis_port)}, pool_size: #{
+            inspect(redis_pool_size)
+          }"
+        )
+
+        [
+          {Freddie.Redis.Pool, [host: redis_host, port: redis_port, pool_size: redis_pool_size]}
+        ]
+      else
+        _ -> []
+      end ++ children
 
     # Quantum Scheduler
     children =

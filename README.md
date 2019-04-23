@@ -6,6 +6,8 @@ See the getting started guide and the [online documentation](https://hexdocs.pm/
 
 Freddie is the Socket Framework for the Elixir. It is written to work with optimized non-bloking socket IO, enabling clients to communicate very quickly. Use Google's protobuf as a unit of packets. Thus, it is easy to create an implementation on most platforms and languages. One protocol file per protocol is matched (Nested structures are also allowed). All messages are optionally encrypted based on AES256. For example, you can use encryption for security-critical messages, and in most cases, you can use it without encryption. All code in freddie is written to follow OTP and works fault-tolerance in the event of a failure. Currently, it can only be used with TCP restrictions, but it will support the RUDP protocol.
 
+![Freddie's default structure](guides/priv/freddie_default_structure.PNG)
+
 ### Freddie
 
 Freddie's internal structure can be separated in several ways. Each element works only for its own role.

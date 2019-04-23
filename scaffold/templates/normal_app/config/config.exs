@@ -16,7 +16,7 @@ config :freddie,
   #redis_port: 6379,
   # Type redis pool size
   #redis_pool_size: 10,
-  # Type srotocol scheme root mod
+  # Type protocol scheme root mod
   scheme_root_mod: <%= app_mod %>.Scheme,
   # Type protocol type root mod
   packet_type_mod: <%= app_mod %>.Protocol.Types,

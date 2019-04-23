@@ -6,19 +6,24 @@ defmodule Mix.Freddie do
   end
 
   defp watched_modules_list do
-    watched_modules_list = []
-
     watched_modules_list =
-      case Application.get_env(:freddie, :scheme_root_mod, nil) do
+      [:scheme_root_mod, :packet_type_mod, :packet_handler_mod]
+      |> Stream.map(&check_load/1)
+      |> Stream.filter(&(&1 != nil))
+      |> Enum.into([])
+
+    watched_modules_list
+  end
+
+  defp check_load(mod) do
+    case Application.get_env(:freddie, mod, nil) do
         nil ->
-          watched_modules_list
+          nil
 
         root_mod ->
           if Code.ensure_loaded?(root_mod),
-            do: [root_mod | watched_modules_list],
-            else: watched_modules_list
+            do: root_mod,
+            else: nil
       end
-
-    watched_modules_list
   end
 end

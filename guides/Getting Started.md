@@ -191,7 +191,7 @@ $ elixir --erl "+spp true +K true +Q 65536 +IOp 2 +scl false" -S mix freddie.ser
 1. Provides Reliable UDP communication(Guarantee the latest order or Guaranteed both sequence and retransmission)
 2. Optimize network code
 3. Divide transmission into reliable and unreliable
-4. Add scaffold mix tool
+4. ~~Add scaffold mix tool~~
 5. Add route mix tool & web page for dev
 
 ## Examples

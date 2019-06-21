@@ -192,7 +192,7 @@ $ elixir --erl "+spp true +K true +Q 65536 +IOp 2 +scl false" -S mix freddie.ser
 
 ## Todo
 
-1. Provides Reliable UDP communication(Guarantee the latest order or Guaranteed both sequence and retransmission)
+1. Provides Reliable UDP communication(Guarantee the latest order or Guaranteed both sequence and retransmission) [udp layer](https://github.com/kernelgarden/ex_rudp)
 2. Optimize network code
 3. Divide transmission into reliable and unreliable
 4. ~~Add scaffold mix tool~~
